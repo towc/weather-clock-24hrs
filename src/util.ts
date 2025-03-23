@@ -232,12 +232,14 @@ export function sky_color(solarElevation: number): string {
       [-10, 0],
       [10, 1],
   ]);
+
+  const sat = .9;
   
   // Interpolate RGB values based on elevation
   // Night (deep blue) to Sunrise/Sunset (orange-pink) to Day (bright blue)
-  const r = Math.round(255 * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t)); // Reduce red component at noon
-  const g = Math.round(180 * Math.sqrt(t)); // Greenish-blue component, more in daytime
-  const b = Math.round(255 * Math.sqrt(t)); // Blue intensity, stronger in daytime
+  const r = Math.round(255 * sat * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t)); // Reduce red component at noon
+  const g = Math.round(180 * sat * Math.sqrt(t)); // Greenish-blue component, more in daytime
+  const b = Math.round(255 * sat * Math.sqrt(t)); // Blue intensity, stronger in daytime
   
   return `rgb(${r}, ${g}, ${b})`;
 }
