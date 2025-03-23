@@ -8,9 +8,9 @@ export function drawClock() {
     <g id=printable>
     ${drawBackboard()}
     <g id=weather-elements></g>
-    ${drawTicks()}
     </g>
     ${params.showHands ? drawHands() : ''}
+    ${drawTicks()}
     <g id=weather-text></g>
     ${drawFrame()}
   `
@@ -19,7 +19,7 @@ export function drawClock() {
 function drawBackboard() {
   const r = 46
   let result = `
-    <circle r=${r+(50-r)/2} fill="white" />
+    <circle r=${r+(50-r)/2} fill="${params.backboardColor}" />
     <circle r=.1 fill=black />
   `;
 
@@ -66,8 +66,11 @@ function drawTicks() {
     const ts = i % 3 === 0 ? params.textSizeHour : params.textSizeHourSmall;
 
     result += `
-      <line x1="${x}" y1="${y}" x2="${ex}" y2="${ey}" stroke="black" stroke-width=".25" />
-      <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size=${ts}>
+      <line
+        x1="${x}" y1="${y}" x2="${ex}" y2="${ey}" stroke-width=".25" 
+        stroke="white" style="mix-blend-mode: difference"
+      />
+      <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size=${ts} fill="${params.textColor}">
         ${i}
       </text>
     `
@@ -77,7 +80,7 @@ function drawTicks() {
       const ty = (radiusText + 1.4) * Math.sin(angle);
 
       result += `
-        <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size=${params.textSizeHour*0.6}>
+        <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size=${params.textSizeHour*0.6} fill="${params.textColor}" >
           24
         </text>
       `
@@ -97,7 +100,10 @@ function drawTicks() {
       const ey = ed * Math.sin(da);
 
       result += `
-        <line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="black" stroke-width=".1" />
+        <line
+          x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke-width=".1"
+          stroke="white" style="mix-blend-mode: difference"
+        />
       `
     }
   }
@@ -188,8 +194,6 @@ function drawHands() {
     }
     dr = dr_before_sky + params.sky_h;
 
-    //label('precip. mm', params.precipitation_max_h);
-    //label('cover %', params.sky_h, 1.5);
     label('sun', params.sun_h)
 
     function label(text: string, height: number, size=1.2, color='#555') {
@@ -242,7 +246,7 @@ function drawFrame() {
   const r = 46;
 
   const result = `
-    <circle r=${r+(50-r)/2} fill=none stroke=#222 stroke-width=${(50-r)} style="${params.shadowCSS}"/>
+    <circle r=${r+(50-r)/2} fill=none stroke="${params.frameColor}" stroke-width=${(50-r)} style="${params.shadowCSS}"/>
   `;
 
   return result;

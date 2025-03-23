@@ -20,22 +20,25 @@ const params = {
   timeSpeed: 1,
 
   // specific clock config
-  radiusHour: 37,
+  radiusHour: TO_BE_DEFINED,
   radiusHourText: 41.5,
   radiusHourTextSmall: 40,
-  sunDistance: 33.75,
+  sunDistance: TO_BE_DEFINED,
   sunRadius: 1,
   hourTickLength: 2,
   hourTickSmallLength: 1.2,
   textSizeHour: 4,
   textSizeHourSmall: 2.8,
   phaseHour: TAU/4,
+  backboardColor: '#fff',
+  frameColor: '#222',
+  textColor: '#000',
   bgImage: false, // 'https://t2.ea.ltmcdn.com/en/posts/5/1/4/types_and_breeds_of_husky_dogs_1415_600_square.jpg',
   bgImageOpacity: .5,
   shadowCSS: "filter: drop-shadow(0 0 1px #0008);",
   
   // weather display config
-  display_start_r: 20,
+  display_start_r: 22,
   display_end_r: TO_BE_DEFINED,
   temperature_h: 1.75,
   ground_h: 1.25,
@@ -80,6 +83,8 @@ const params = {
 
 params.display_end_r = params.display_start_r + params.temperature_h + params.ground_h + params.sky_h + params.sun_h;
 params.cloud_min_hPa = metersTohPa(params.cloud_end_alt + params.cloud_resolution);
+params.sunDistance = params.display_end_r - params.sun_h/2;
+params.radiusHour = params.display_end_r;
 
 (window as any).toggleSpeed = () => {
   params.timeSpeed = params.timeSpeed === 1 ? 1000 : 1
