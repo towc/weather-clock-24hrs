@@ -225,8 +225,14 @@ function drawHands() {
   // hand proper
   {
     result += `
-      <polygon points="-.3,-.3 -.3,.3 ${r},.02 ${r},-.02" fill=#000 />
-      <circle cx=${cd} cy=0 r=${cr} fill=none stroke=black stroke-width=.2 onclick="toggleSpeed()" />
+      <polygon
+        points="-.3,-.3 -.3,.3 ${r},.02 ${r},-.02"
+        fill="black"
+      />
+      <circle cx=${cd} cy=0 r=${cr} fill=none stroke-width=.2
+          stroke="white" style="mix-blend-mode: difference"
+          onclick="toggleSpeed()" style="cursor:pointer"
+      />
     `
   }
 
