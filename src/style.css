@@ -1,0 +1,12 @@
+body {
+  background-color: #d1d1d1;
+  background-image: linear-gradient(to right, #637fa6, #637fa6 40px, #d1d1d1 40px, #d1d1d1 );
+  background-size: 80px 100%;
+  margin: 0 0;
+  padding: 0 0;
+}
+svg {
+  display: block;
+  width: 800px;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+}
