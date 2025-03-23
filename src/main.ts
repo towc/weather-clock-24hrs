@@ -24,10 +24,11 @@ async function run() {
   }
 
   svg.setAttribute('viewBox', '-50 -50 100 100');
-  if (window.innerWidth < 750 || window.innerWidth > 850) {
+  svg.style.width = Math.min(window.innerWidth, window.innerHeight) + 'px';
+
+  if (window.innerWidth < 790 || window.innerWidth > 810) {
     // if not in an iframe
-    svg.style.margin = 'auto';
-    svg.style.marginTop = '30px';
+
   }
   
   const renderId = Math.random();
