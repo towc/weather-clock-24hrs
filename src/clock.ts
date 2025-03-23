@@ -156,8 +156,8 @@ function drawHands() {
     const ha = 0;
     const ea = ha - ((10/60)/24*TAU);
     let dr = params.display_start_r;
-    const nr = (h) => {
-      dr += h;
+    const nr = (height: number) => {
+      dr += height;
       return dr;
     }
 
@@ -191,9 +191,9 @@ function drawHands() {
     //label('cover %', params.sky_h, 1.5);
     label('sun', params.sun_h)
 
-    function label(text, h, size=1.2, color='#555') {
+    function label(text: string, height: number, size=1.2, color='#555') {
       const lsr = dr;
-      const ler = nr(h);
+      const ler = nr(height);
       const lcr = (lsr + ler) / 2;
 
       const lsx = lsr * Math.cos(ha);
@@ -248,12 +248,13 @@ function drawFrame() {
 }
 
 
-export function updateHands(state, time) {
+export function updateHands(state: object, time: number) {
   const period = 1000 * 60 * 60 * 24;
   const angle = (time % period) / period * TAU + params.phaseHour;
   const angleDeg = angle / TAU * 360;
 
   document.getElementById('hand-hour')!.setAttribute('transform', `rotate(${angleDeg})`);
 
+  // @ts-ignore
   state.lastUpdate = time;
 }

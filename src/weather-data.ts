@@ -3,8 +3,82 @@ import {calculateGroundSunExposureIndex, calculateSolarElevation, gradient, lerp
 
 const TAU = Math.PI * 2;
 
-export function processWeatherData(raw) {
-  const result = {
+interface RawWeatherData {
+  hourly: {
+    time: string[];
+    temperature_2m: number[];
+    relative_humidity_2m: number[];
+    precipitation_probability: number[];
+    precipitation: number[];
+    sunshine_duration: number[];
+  };
+  minutely_15: {
+    time: string[];
+    sun_incidence: number[];
+    shortwave_radiation: number[];
+    sunshine_duration: number[];
+    relative_humidity_2m: number[];
+    precipitation: number[];
+    apparent_temperature: number[];
+  };
+}
+interface RawHour {
+  time: string;
+  temperature_2m: number;
+  relative_humidity_2m: number;
+  precipitation_probability: number;
+  precipitation: number;
+  sunshine_duration: number;
+}
+interface RawQuarter {
+  time: string;
+  sun_incidence: number;
+  shortwave_radiation: number;
+  sunshine_duration: number;
+  relative_humidity_2m: number;
+  precipitation: number;
+  apparent_temperature: number;
+}
+export interface WeatherData {
+  byHour: HourlyData[]
+}
+interface HourlyData {
+  date: Date;
+  temperature: number;
+  relative_humidity: number;
+  precipitation_probability: number;
+  precipitation: number;
+  hour_index: number;
+  sunshine: number;
+  cloud_cover: number;
+  cloud_cover_by_alt: CloudCover[];
+  thickest_alt: number;
+  quarterly: QuarterlyData[];
+}
+interface CloudCover {
+  altitude: number;
+  cover: number;
+}
+interface QuarterlyData {
+  time: string;
+  quarter_index: number;
+  sun_incidence: number;
+  shortwave_radiation: number;
+  sunshine_duration: number;
+  relative_humidity: number;
+  precipitation: number;
+  apparent_temperature: number;
+  sun: number;
+  sunshine: number;
+  gsei: number;
+  is_day: number | boolean;
+  cloud_cover_by_alt: CloudCover[];
+  solar_elevation: number;
+  thickest_alt: number;
+}
+
+export function processWeatherData(raw: RawWeatherData) {
+  const result: WeatherData = {
     byHour: [],
   }
   
@@ -19,17 +93,17 @@ export function processWeatherData(raw) {
     const time = new Date(raw.hourly.time[i]);
 
     // only display this hour +23hrs
-    if (time < Date.now() - 3600_000) {
+    if (+time < Date.now() - 3600_000) {
       continue;
     }
-    if (time > Date.now() + 23 * 3600_000 ) {
+    if (+time > Date.now() + 23 * 3600_000 ) {
       break;
     }
     
     const raw_hour = Object.fromEntries(
       Object.entries(raw.hourly)
         .map(([k, vs]) => [k, vs[i]])
-      );
+      ) as object as RawHour;
     const raw_quarters = range(4).map(n => {
       const q = {
         ...Object.fromEntries(
@@ -39,13 +113,17 @@ export function processWeatherData(raw) {
         quarter_index: n,
       }
       return q;
-    });
-    
-    const prev_hour_res = result.byHour[result.byHour.length - 1];
+    }) as object[] as RawQuarter[];
     
     const hour = time.getHours()
     
-    const h = Object.fromEntries(Object.entries(params.hourly_property_map).map(([k, v]) => [k, raw_hour[v]] ))
+    const h = Object.fromEntries(
+      Object.entries(params.hourly_property_map)
+      .map(([k, v]) =>
+        // @ts-ignore
+        [k, raw_hour[v]]
+      )) as object as HourlyData;
+
     h.date = time;
     h.hour_index = time.getHours();
     h.sunshine = raw_hour.sunshine_duration / 3600 * 100;
@@ -53,9 +131,10 @@ export function processWeatherData(raw) {
     const altitude_cover_map = [];
     let thickest_alt = 0;
     for (let p = params.cloud_max_hPa; p >= params.cloud_min_hPa; p -= params.cloud_resolution_hPa) {
+      // @ts-ignore
       const cover = raw_hour[`cloud_cover_${p}hPa`];
-      // technically ASL and not AGL, but resolution is low enough that doesn't matter for our purposes
-      const altitude = raw_hour[`geopotential_height_${p}hPa`];
+      // @ts-ignore
+      const altitude = raw_hour[`geopotential_height_${p}hPa`]!;
       altitude_cover_map.push({ altitude, cover });
     }
 
@@ -84,19 +163,23 @@ export function processWeatherData(raw) {
     h.thickest_alt = thickest_alt;
     
     h.quarterly = raw_quarters
-        .map(rq => Object.fromEntries(Object.entries(params.quarterly_property_map).map(([k, v]) => [k, rq[v]])))
+        .map(rq => Object.fromEntries(
+          Object.entries(params.quarterly_property_map)
+          .map(([k, v]) =>
+            // @ts-ignore
+            [k, rq[v]])))
         .map((q,i) => {
           q.date = new Date(raw_quarters[i].time);
           q.is_day = q.sun_incidence > 0;
           q.sunshine = q.sunshine_duration / 3600 * 4 * 100;
           q.sun = Math.min(q.sun_incidence, 400) / 400 * 100;
           q.solar_elevation = calculateSolarElevation(q.date); // deg
-          q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.sun_incidence, q.date);
+          q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.sun_incidence);
           q.quarter_index = i; 
           q.hour_index = h.hour_index;
 
           return q;
-        });
+        }) as object[] as QuarterlyData[];
     
     result.byHour[hour] = h;
   }
@@ -118,7 +201,7 @@ export function processWeatherData(raw) {
 
   return result;
 }
-export async function getWeatherData(tries = 0) {
+export async function getWeatherData(tries = 0): Promise<WeatherData> {
   if (tries >= 3) {
     throw new Error('tried too many times');
   }
@@ -141,8 +224,8 @@ export async function getWeatherData(tries = 0) {
     return res;
   }
 }
-function genDemoWeather() {
-  const result = {
+function genDemoWeather(): WeatherData {
+  const result: WeatherData = {
     byHour: [],
   }
   
@@ -163,30 +246,29 @@ function genDemoWeather() {
       visibility: lerp(r(), 0, 10),
       wind_speed: lerp(r(), 0, 20),
       hour_index: i % 24,
-    };
-    
-    // not technically true
-    h.cloud_cover = Math.max(
-      h.cloud_cover_low,
-      Math.max(h.cloud_cover_mid,
-               h.cloud_cover_high));
+      cloud_cover: lerp(r(), 0, 100),
+    } as object as HourlyData;
     
     h.quarterly = range(4).map((n) => {
       const offset = (n/4)/24;
 
-      const q = {
+      // TODO make demo weather work again
+      // @ts-ignore
+      const q: QuarterlyData = {
         time: `2025-3-21T${i}:${n*15}`,
         // TODO CONTINUE FROM HERE calc gsei instead of using sunshine_duration
         apparent_temperature: lerp(r(offset), -20, 50),
         sun_incidence: lerp(Math.max(Math.sin((ratio + offset) * TAU - TAU/4),0), 0, 850),
         quarter_index: n,
+        sun: 0,
+        gsei: 0,
       }
       q.sun = Math.min(q.sun_incidence, 150) / 150 * 100;
       // TODO make affected by clouds
-      q.gsei = q.sunshine;
+      q.gsei = q.sun;
 
       return q;
-    })
+    });
     
     result.byHour[i] = h;
   }

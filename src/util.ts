@@ -2,12 +2,15 @@ import { params } from './params';
 
 const TAU = Math.PI * 2;
 
-export function gradients(value, stops) {
+type Stops = [number, number][]
+type Multistops = number[][]
+export function gradients(value: number, stops: Multistops) {
+  // @ts-ignore
   const [K, ...Vs] = stops[0];
   return Vs.map((_,i) =>
     gradient(value, stops.map(s => [s[0], s[i+1]])));
 }
-export function gradient(value, stops) {
+export function gradient(value: number, stops: Stops) {
   const [K, V] = [0, 1]
   if (value < stops[0][K]) {
     return stops[0][V]
@@ -25,14 +28,14 @@ export function gradient(value, stops) {
   
   return stops[stops.length - 1][V];
 }
-export function lerp(ratio, s, e) {
+export function lerp(ratio: number, s: number, e: number) {
   const d = e - s;
   return s + d*ratio;
 }
-export function unlerp(v, s, e) {
+export function unlerp(v: number, s: number, e: number) {
   return (v-s)/(e-s);
 }
-export function svgPolarText(text, r, a, size=1, color="black", anchor="middle", dx=0) {
+export function svgPolarText(text: string, r: number, a: number, size=1, color="black", anchor="middle", dx=0) {
   const x = r * Math.cos(a);
   const y = r * Math.sin(a);
   
@@ -57,7 +60,7 @@ export function svgPolarText(text, r, a, size=1, color="black", anchor="middle",
     </g>
   `
 }
-export function svgText(text, cx, cy, size=1, color="black") {
+export function svgText(text: string | number, cx: number, cy: number, size=1, color="black") {
   return `
     <text x="${cx}" y="${cy}"
           text-anchor="middle" dominant-baseline="middle"
@@ -66,7 +69,7 @@ export function svgText(text, cx, cy, size=1, color="black") {
     </text>
   `
 }
-export function svgGauge(sa, ea, sr, er, color) {
+export function svgGauge(sa: number, ea: number, sr: number, er: number, color: string) {
   er += .05;
   ea += .001;
   const w = er - sr;
@@ -74,7 +77,7 @@ export function svgGauge(sa, ea, sr, er, color) {
     <path d="${svgArc(0, 0, sr+w/2, sa, ea)}" stroke="${color}" stroke-width=${w} fill=none />
   `
 }
-export function svgArc(x, y, radius, startAngle, endAngle, counterClockwise=false, move_or_line='M') {
+export function svgArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterClockwise=false, move_or_line='M') {
   // modified from https://github.com/gliffy/canvas2svg/blob/master/canvas2svg.js#L1008
   
   // in canvas no circle is drawn if no angle is provided.
@@ -117,12 +120,12 @@ export function svgArc(x, y, radius, startAngle, endAngle, counterClockwise=fals
   
   return result
 }
-export function hourToAngle(hour_index) {
+export function hourToAngle(hour_index: number) {
    return hour_index / 24 * TAU + TAU/4;
 }
 // (1.1).toFixed(4) === "1.1000" instead of "1.1"
 // (1).toFixed(4) === "1.0000" instead of "1"
-export function toFixedOrSkip(n, p) {
+export function toFixedOrSkip(n: number, p: number) {
   const fixed = n.toFixed(p);
   const regex_result = n.toFixed(p).match(/^(\d+\.\d+?)0*$/);
   if (!regex_result) return fixed;
@@ -131,16 +134,16 @@ export function toFixedOrSkip(n, p) {
   if (might_trail_once.endsWith('.0')) return might_trail_once.split('.')[0];
   return might_trail_once;
 }
-export function range(n) {
-  return Array(n).fill().map((_,i) => i)
+export function range(n: number) {
+  return Array(n).fill(0).map((_,i) => i)
 }
-export function degToRad(deg) { return deg * (Math.PI / 180); }
-export function radToDeg(rad) { return rad * (180 / Math.PI); }
-export function calculateSolarElevation(date) {
+export function degToRad(deg: number) { return deg * (Math.PI / 180); }
+export function radToDeg(rad: number) { return rad * (180 / Math.PI); }
+export function calculateSolarElevation(date: Date) {
     const { latitude, longitude } = params;
     // modified from chatgpt
     
-    const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+    const dayOfYear = Math.floor((+date - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000);
     const hourUTC = date.getUTCHours() + date.getMinutes() / 60;
     
     // Equation of Time correction (approximate, in minutes)
@@ -168,7 +171,7 @@ export function calculateSolarElevation(date) {
     
     return elevation; // Ensure no negative elevation (i.e., nighttime)
 }
-export function calculateGroundSunExposureIndex(shortwave_radiation, terrestrial_radiation) {
+export function calculateGroundSunExposureIndex(shortwave_radiation: number, terrestrial_radiation: number) {
   // modified from chatgpt
   const I_actual = shortwave_radiation;
   const I_TOA = terrestrial_radiation;
@@ -187,7 +190,7 @@ export function calculateGroundSunExposureIndex(shortwave_radiation, terrestrial
 
   return GSEI * 100;
 } 
-export function hPaToMeters(pressure) {
+export function hPaToMeters(pressure: number) {
   const P0 = 1013.25;  // Standard sea-level pressure in hPa
   const T0 = 288.15;   // Standard sea-level temperature in Kelvin (15°C)
   const L = 0.0065;    // Temperature lapse rate (K/m)
@@ -197,7 +200,7 @@ export function hPaToMeters(pressure) {
 
   return ((T0 / L) * (1 - Math.pow(pressure / P0, (R * L) / (g * M))));
 }
-export function metersTohPa(altitude) {
+export function metersTohPa(altitude: number): number {
   const P0 = 1013.25;  // Standard sea-level pressure in hPa
   const T0 = 288.15;   // Standard sea-level temperature in Kelvin (15°C)
   const L = 0.0065;    // Temperature lapse rate (K/m)

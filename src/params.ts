@@ -75,9 +75,9 @@ const params = {
 };
 
 params.display_end_r = params.display_start_r + params.temperature_h + params.ground_h + params.sky_h + params.sun_h;
-params.cloud_min_hPa = metersTohPa(params.cloud_end_alt + params.cloud_resolution)
+params.cloud_min_hPa = metersTohPa(params.cloud_end_alt + params.cloud_resolution);
 
-window.toggleSpeed = () => {
+(window as any).toggleSpeed = () => {
   params.timeSpeed = params.timeSpeed === 1 ? 1000 : 1
 }
 

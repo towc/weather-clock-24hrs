@@ -59,7 +59,7 @@ async function run() {
 
   render(Date.now());
   
-  async function updateWeatherElements(time) {
+  async function updateWeatherElements(time: number) {
     const weather = await getWeatherData();
     
     document.getElementById('weather-elements')!.innerHTML = drawWeatherElements(weather, time);
@@ -69,7 +69,7 @@ async function run() {
 run();
 
 
-window.resetWeatherCache = () => {
+(window as any).resetWeatherCache = () => {
   svg.innerHTML = `
     <span>
     resetting weather cache

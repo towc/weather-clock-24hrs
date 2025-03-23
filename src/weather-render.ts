@@ -1,9 +1,10 @@
 import {params} from "./params";
 import {cloud_er_by_alt, cloud_sr_by_alt, gradient, gradients, hourToAngle, lerp, svgGauge, svgPolarText, toFixedOrSkip} from "./util";
+import {WeatherData} from "./weather-data";
 
 const TAU = Math.PI * 2;
 
-export function drawWeatherElements(weather, time) {
+export function drawWeatherElements(weather: WeatherData, time: number) {
   let result = ``;
   let textResult = ``;
 
@@ -25,11 +26,10 @@ export function drawWeatherElements(weather, time) {
     // but it will create more confusion if I do that. Text is still correct
     const sa = hourToAngle(h.hour_index)
     const ea = hourToAngle(h.hour_index + 1) + .0001;
-    const ca = (sa+ea)/2;
 
     let dr = params.display_start_r;
-    const er_h = (h) => {
-      dr += h;
+    const er_h = (height: number) => {
+      dr += height;
       return dr;
     }
 
@@ -106,7 +106,7 @@ export function drawWeatherElements(weather, time) {
     {
 
       const sr = sky_sr;
-      const er = er_h(params.sky_h);
+      er_h(params.sky_h);
 
       for (const q of h.quarterly) {
         const qsa = lerp(q.quarter_index/4, sa, ea);
@@ -212,7 +212,7 @@ export function drawWeatherElements(weather, time) {
         [5, 100, 0],
         [100, 100, .95],
       ]
-      const cloud_color = (cover) => {
+      const cloud_color = (cover: number) => {
         const [lgt, alp] = gradients(cover, cloud_stops);
 
         return `hsla(0,0%,${lgt}%,${alp})`;
@@ -266,9 +266,9 @@ export function drawWeatherElements(weather, time) {
       }
     }
 
-    function label(text, r, size = .8, color = '#888') {
+    function label(text: string, radius: number, size = .8, color = '#888') {
       if (is_current_hour) {
-        textResult += svgPolarText(text, r, sa - .2, size, color, 'end');
+        textResult += svgPolarText(text, radius, sa - .2, size, color, 'end');
       }
     }
   }
