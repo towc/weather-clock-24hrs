@@ -61,15 +61,15 @@ interface CloudCover {
   cover: number;
 }
 interface QuarterlyData {
-  time: string;
+  date: Date;
   quarter_index: number;
+  hour_index: number;
   sun_incidence: number;
   shortwave_radiation: number;
   sunshine_duration: number;
   relative_humidity: number;
   precipitation: number;
   apparent_temperature: number;
-  sun: number;
   sunshine: number;
   gsei: number;
   is_day: number | boolean;
@@ -161,22 +161,18 @@ export function processWeatherData(raw: RawWeatherData) {
     }
     h.thickest_alt = thickest_alt;
     
-    h.quarterly = raw_quarters
+    h.quarterly = (raw_quarters
         .map(rq => Object.fromEntries(
           Object.entries(params.quarterly_property_map)
           .map(([k, v]) =>
             // @ts-ignore
-            [k, rq[v]])))
+            [k, rq[v]]))) as object as QuarterlyData[])
         .map((q,i) => {
+          q as QuarterlyData;
           q.date = new Date(raw_quarters[i].time);
           q.is_day = q.sun_incidence > 0;
           q.sunshine = q.sunshine_duration / 3600 * 4 * 100;
           q.solar_elevation = calculateSolarElevation(q.date); // deg
-          q.sun = gradient(q.solar_elevation, [
-            [-12, 0],
-            [0, 90],
-            [6, 100],
-          ]);
           q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.sun_incidence);
           q.quarter_index = i; 
           q.hour_index = h.hour_index;
@@ -194,11 +190,10 @@ export function processWeatherData(raw: RawWeatherData) {
     
     for (let qi = 0; qi < 4; ++qi) {
       const q = h.quarterly[qi];
-      // useful hour
-      const uh = qi < 2 ? h : nh;
+      const useful_hour = qi < 2 ? h : nh;
       
-      q.cloud_cover_by_alt = uh.cloud_cover_by_alt;
-      q.thickest_alt = uh.thickest_alt;
+      q.cloud_cover_by_alt = useful_hour.cloud_cover_by_alt;
+      q.thickest_alt = useful_hour.thickest_alt;
     }
   }
 

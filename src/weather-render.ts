@@ -1,5 +1,5 @@
 import {params} from "./params";
-import {cloud_er_by_alt, cloud_sr_by_alt, gradient, gradients, hourToAngle, lerp, svgGauge, svgPolarText, toFixedOrSkip} from "./util";
+import {cloud_er_by_alt, cloud_sr_by_alt, gradient, gradients, hourToAngle, lerp, sky_color, svgGauge, svgPolarText, toFixedOrSkip} from "./util";
 import {WeatherData} from "./weather-data";
 
 const TAU = Math.PI * 2;
@@ -100,7 +100,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
 
     const sky_sr = dr;
-    // sky/sunshine
+    // sky
     {
 
       const sr = sky_sr;
@@ -110,20 +110,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         const qsa = lerp(q.quarter_index/4, sa, ea);
         const qea = qsa + (.25/24 * TAU) + .001;
 
-        const sky_brightness = gradient(q.solar_elevation, [
-          [-6, 0],
-          [12, 100],
-        ])
-
-        const stops = [
-          [0, 20, 20],
-          [.1, 80, 20],
-          [100, 80, 80],
-        ]
-
-        // on and above clouds (not affected by clouds)
-        const [sat, light] = gradients(sky_brightness, stops);
-        const color = `hsl(200, ${sat}%, ${light}%)`;
+        const color = sky_color(q.solar_elevation)
 
         result += svgGauge(qsa, qea, sr, er, color);
       }
@@ -234,20 +221,21 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       // TODO visualize?
 
       const color_stops = [
-        [0, 50, 100],
-        [100, 50, 30]
+        [0, 30, 50, 70],
+        [30, 30, 50, 50],
+        [70, 180, 50, 50],
+        [100, 180, 50, 30]
       ]
 
-      const [sat, lgt] = gradients(h.relative_humidity, color_stops)
-      const textColor = `hsl(180, ${sat}%, ${lgt}%)`;
+      const [hue, sat, lgt] = gradients(h.relative_humidity, color_stops)
+      const textColor = `hsl(${hue}, ${sat}%, ${lgt}%)`;
 
       const display_humidity = ((h.relative_humidity / 5)|0)*5
 
       label('RH [%]', display_humidity + '%', params.humidity_text_h, params.humidity_text_s, textColor);
     }
 
-    // sun (hitting atmosphere, not ground)
-    // `terrestrial_radiation` is not a great metric, as it's 0 at civil twilight
+    // sun (visible in clear sky)
     {
       const sr = dr;
       const er = er_h(params.sun_h);
@@ -258,8 +246,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         const qea = qsa + (.25/24 * TAU);
 
         const [sat, lgt] = gradients(q.solar_elevation, [
-          [-12, 100, 0],
-          [0, 100, 30],
+          [0, 100, 0],
           [6, 90, 70],
         ]);
 

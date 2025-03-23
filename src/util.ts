@@ -221,3 +221,23 @@ export function cloud_sr_by_alt(alt: number) {
 export function cloud_er_by_alt(alt: number) {
   return cloud_sr_by_alt(alt + params.cloud_resolution)
 }
+export function sky_color(solarElevation: number): string {
+  // modified from ChatGPT
+
+  // Clamp solar elevation between -10 and 90 degrees for smooth transition
+  const clampedElevation = Math.max(-10, Math.min(90, solarElevation));
+  
+  // Normalize to range [0,1] where -10 -> 0 and 90 -> 1
+  const t = gradient(clampedElevation, [
+      [-10, 0],
+      [10, 1],
+  ]);
+  
+  // Interpolate RGB values based on elevation
+  // Night (deep blue) to Sunrise/Sunset (orange-pink) to Day (bright blue)
+  const r = Math.round(255 * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t)); // Reduce red component at noon
+  const g = Math.round(180 * Math.sqrt(t)); // Greenish-blue component, more in daytime
+  const b = Math.round(255 * Math.sqrt(t)); // Blue intensity, stronger in daytime
+  
+  return `rgb(${r}, ${g}, ${b})`;
+}
