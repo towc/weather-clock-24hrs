@@ -81,9 +81,9 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
 
       const color_stops = [
-        [0, 30, 30, 0],
-        [50, 30, 30, 80],
-        [100, 30, 30, 100],
+        [0, 30, 10, 10],
+        [50, 30, 10, 80],
+        [100, 30, 10, 100],
       ]
 
       for (const q of h.quarterly) {
