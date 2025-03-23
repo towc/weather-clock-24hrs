@@ -29,6 +29,7 @@ async function run() {
   if (window.innerWidth < 790 || window.innerWidth > 810) {
     // if not in an iframe
 
+    svg.style.filter = 'drop-shadow(0 0 10px rgba(0,0,0,0.5))';
   }
   
   const renderId = Math.random();
@@ -51,10 +52,10 @@ async function run() {
     }
 
     if (params.progressTime && activeRenderId === renderId) {
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         const elapsed = Date.now() - computed.realStart;
         render(computed.startDate + elapsed * params.timeSpeed)
-      });
+      }, 1000);
     }
   }
 
