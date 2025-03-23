@@ -1,5 +1,5 @@
 import {params} from "./params";
-import {calculateGroundSunExposureIndex, calculateSolarElevation, gradient, lerp, range} from "./util";
+import {calculateGroundSunExposureIndex, calculateSolarElevation, lerp, range} from "./util";
 
 const TAU = Math.PI * 2;
 
@@ -254,19 +254,15 @@ function genDemoWeather(): WeatherData {
       const offset = (n/4)/24;
 
       // TODO make demo weather work again
-      // @ts-ignore
       const q: QuarterlyData = {
-        time: `2025-3-21T${i}:${n*15}`,
-        // TODO CONTINUE FROM HERE calc gsei instead of using sunshine_duration
+        date: new Date(`2025-3-21T${i}:${n*15}`),
         apparent_temperature: lerp(r(offset), -20, 50),
         sun_incidence: lerp(Math.max(Math.sin((ratio + offset) * TAU - TAU/4),0), 0, 850),
         quarter_index: n,
-        sun: 0,
         gsei: 0,
-      }
-      q.sun = Math.min(q.sun_incidence, 150) / 150 * 100;
+      } as QuarterlyData;
       // TODO make affected by clouds
-      q.gsei = q.sun;
+      q.gsei = Math.min(q.sun_incidence, 150) / 150 * 100;
 
       return q;
     });
@@ -292,7 +288,7 @@ function genDemoWeather(): WeatherData {
       
       const cloud_cover = qi >= 2 ? nh.cloud_cover : h.cloud_cover;
 
-      q.sunshine = Math.min(q.sun, 100 - Math.max(cloud_cover - 50, 0));
+      q.sunshine = Math.min(q.sun_incidence, 100 - Math.max(cloud_cover - 50, 0));
       q.is_day = q.sunshine > 0;
       q.precipitation = cloud_cover > 80 
         ? Math.max(Math.sin((r(offset,.01) * 2) * TAU * 4) * cloud_cover / 100 * 5 + 5, 0) 
