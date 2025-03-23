@@ -44,8 +44,11 @@ const params = {
   sun_h: 2.25,
   
   // weather text config
-  text_z: 20,
-  hand_z: 30,
+  temperature_text_h: 1, temperature_text_s: 1,
+  temperature_feels_like_text_h: 2, temperature_feels_like_text_s: 2,
+  cover_text_h: 2, cover_text_s: 1,
+  precipitation_text_h: 2, precipitation_text_s: 1,
+  humidity_text_h: 2, humidity_text_s: .8,
   
   // weather fetch config
   cloud_resolution_hPa: 25, // doesn't go any lower with open-meteo
@@ -56,6 +59,7 @@ const params = {
   cloud_end_alt: 306 * 8,
   hourly_property_map: {
     temperature: 'temperature_2m',
+    apparent_temperature: 'apparent_temperature',
     relative_humidity: 'relative_humidity_2m',
     precipitation_probability: 'precipitation_probability',
     precipitation: 'precipitation',

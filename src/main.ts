@@ -62,7 +62,10 @@ async function run() {
   async function updateWeatherElements(time: number) {
     const weather = await getWeatherData();
     
-    document.getElementById('weather-elements')!.innerHTML = drawWeatherElements(weather, time);
+    const drawn = drawWeatherElements(weather, time);
+
+    document.getElementById('weather-elements')!.innerHTML = drawn.svg;
+    document.getElementById('weather-text')!.innerHTML = drawn.text;
   }
 }
 

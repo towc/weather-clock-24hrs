@@ -11,6 +11,7 @@ export function drawClock() {
     ${drawTicks()}
     </g>
     ${params.showHands ? drawHands() : ''}
+    <g id=weather-text></g>
     ${drawFrame()}
   `
 }
@@ -162,7 +163,7 @@ function drawHands() {
     }
 
     label('temp.', params.temperature_h);
-    label('RH', params.ground_h);
+    label('light', params.ground_h);
     
     const dr_before_sky = dr;
     for (let alt = params.cloud_start_alt + params.cloud_resolution; alt <= params.cloud_end_alt; alt += params.cloud_resolution) {

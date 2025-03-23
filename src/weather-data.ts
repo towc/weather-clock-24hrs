@@ -45,6 +45,7 @@ export interface WeatherData {
 interface HourlyData {
   date: Date;
   temperature: number;
+  apparent_temperature: number;
   relative_humidity: number;
   precipitation_probability: number;
   precipitation: number;
@@ -147,15 +148,13 @@ export function processWeatherData(raw: RawWeatherData) {
       const max_cover = all_in_range.reduce((acc, { cover }) => Math.max(acc, cover), 0);
       h.cloud_cover_by_alt.push({ altitude: alt, cover: max_cover });
 
-      if (max_cover > thickest_cover) {
+      // higher clouds have less chance of actually being thick, so lower cover weight.
+      const alt_factor = (alt - params.cloud_start_alt) / (params.cloud_end_alt - params.cloud_start_alt);
+      const weighed = max_cover * (1-alt_factor)**2;
+        
+      if (weighed > thickest_cover) {
         // important that we go from low to high clouds, so lower take precedence for rain.
 
-        // higher clouds have less chance of actually being thick, so lower cover weight.
-        const weighed = max_cover * gradient(alt, [
-          [params.cloud_start_alt, 1],
-          [params.cloud_end_alt, 0],
-        ]);
-        
         thickest_cover = weighed;
         thickest_alt = alt;
       }
@@ -172,8 +171,12 @@ export function processWeatherData(raw: RawWeatherData) {
           q.date = new Date(raw_quarters[i].time);
           q.is_day = q.sun_incidence > 0;
           q.sunshine = q.sunshine_duration / 3600 * 4 * 100;
-          q.sun = Math.min(q.sun_incidence, 400) / 400 * 100;
           q.solar_elevation = calculateSolarElevation(q.date); // deg
+          q.sun = gradient(q.solar_elevation, [
+            [-12, 0],
+            [0, 90],
+            [6, 100],
+          ]);
           q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.sun_incidence);
           q.quarter_index = i; 
           q.hour_index = h.hour_index;
@@ -198,6 +201,9 @@ export function processWeatherData(raw: RawWeatherData) {
       q.thickest_alt = uh.thickest_alt;
     }
   }
+
+  // easier debugging
+  (window as any).weather_data = result;
 
   return result;
 }
