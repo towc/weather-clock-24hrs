@@ -6,6 +6,7 @@ body {
   padding: 0 0;
   width: 100vw;
   height: 100vh;
+  font-family: monospace;
 }
 #svg {
   display: block;

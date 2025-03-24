@@ -66,8 +66,8 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         result += svgGauge(qsa, qea, sr, er, color)
       }
 
-      label('temp. [°C]', Math.round(h.temperature) + '°', params.temperature_text_h, params.temperature_text_s, 'black');
-      label('feels like [°C]',
+      label('°C', Math.round(h.temperature) + '°', params.temperature_text_h, params.temperature_text_s, 'black');
+      label('feels like',
         Math.round(h.apparent_temperature) + '°',
         params.temperature_feels_like_text_h,
         params.temperature_feels_like_text_s,
@@ -151,7 +151,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         ? Math.round(h.cloud_cover) + '%'
         : '';
 
-      label('cover [%]', display_value, params.cover_text_h, params.cover_text_s, `hsl(0,0%,${lgt_overall}%)`);
+      label('cover', display_value, params.cover_text_h, params.cover_text_s, `hsl(0,0%,${lgt_overall}%)`);
     }
 
     // precipitation [mm]
@@ -213,7 +213,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         ? toFixedOrSkip(h.precipitation, 1)
         : '';
 
-      label('precip. [mm]', display_value, params.precipitation_text_h, params.precipitation_text_s, 'hsl(200, 100%, 43%)');
+      label('rain mm', display_value, params.precipitation_text_h, params.precipitation_text_s, 'hsl(200, 100%, 43%)');
     }
 
     // humidity
@@ -232,7 +232,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
       const display_humidity = ((h.relative_humidity / 5)|0)*5
 
-      label('RH [%]', display_humidity + '%', params.humidity_text_h, params.humidity_text_s, textColor);
+      label('RH', display_humidity + '%', params.humidity_text_h, params.humidity_text_s, textColor);
     }
 
     // sun (visible in clear sky)
@@ -259,7 +259,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     function label(name: string, value: string | number, height: number, size=1, color='black') {
       const tr = tr_h(height);
       if (is_nearest_hour) {
-        textResult += svgPolarText(name, tr, sa - .1, .8, '#888', 'end', -1, -.2);
+        textResult += svgPolarText(name, tr, sa - .1, params.label_text_s, '#888', 'end', -1, -.2);
       }
       if (render_text) {
         textResult += svgPolarText(value, tr, sa, size, color, 'middle');

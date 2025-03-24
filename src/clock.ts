@@ -12,7 +12,6 @@ export function drawClock() {
     ${params.showHands ? drawHands() : ''}
     ${drawTicks()}
     <g id=weather-text></g>
-    ${drawFrame()}
   `
 }
 
@@ -58,7 +57,6 @@ function drawTicks() {
     let tr = radiusText + tickSize/2 - params.hourTickLength/2;
 
     // accomodate for the 24 under
-    if (i === 0) tr -= 1;
     if (i % 3 !== 0) tr += .8;
 
     const tx = tr * Math.cos(angle);
@@ -70,17 +68,25 @@ function drawTicks() {
         x1="${x}" y1="${y}" x2="${ex}" y2="${ey}" stroke-width=".25" 
         stroke="white" style="mix-blend-mode: difference"
       />
-      <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size=${ts} fill="${params.textColor}">
+      <text 
+        x="${tx}" y="${ty}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-size=${ts} fill="white" style="mix-blend-mode: difference"
+      >
         ${i}
       </text>
     `
 
     if (i === 0) {
-      const tx = (radiusText + 1.4) * Math.cos(angle);
-      const ty = (radiusText + 1.4) * Math.sin(angle);
+      const tx = (radiusText + 2.5) * Math.cos(angle);
+      const ty = (radiusText + 2.5) * Math.sin(angle);
 
       result += `
-        <text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="middle" font-size=${params.textSizeHour*0.6} fill="${params.textColor}" >
+        <text
+          x="${tx}" y="${ty}"
+          text-anchor="middle" dominant-baseline="middle"
+          font-size=${params.textSizeHour*0.6} fill="white" style="mix-blend-mode: difference"
+        >
           24
         </text>
       `
@@ -89,7 +95,8 @@ function drawTicks() {
     const nd = 6
     for (let d = 1; d < nd; ++d) {
       const da = angle + d/nd/24 * TAU;
-      const size = d % 3 === 0 ? params.hourTickSmallLength * .8 : params.hourTickSmallLength * .4;
+      const size = d % 3 === 0 ? params.sixthTickLength : params.sixthTickSmallLength;
+      const width = d % 3 === 0 ? params.sixthTickWidth : params.sixthTickSmallWidth;
 
       const sd = params.radiusHour - size/2;
       const sx = sd * Math.cos(da);
@@ -101,7 +108,7 @@ function drawTicks() {
 
       result += `
         <line
-          x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke-width=".1"
+          x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke-width="${width}"
           stroke="white" style="mix-blend-mode: difference"
         />
       `
@@ -112,12 +119,6 @@ function drawTicks() {
 }
 
 function drawHands() {
-  // total radius
-  const r = params.radiusHour;
-  // circle distance
-  const cd = params.sunDistance;
-  // circle radius
-  const cr = params.sunRadius;
   
   let result = `<g id=hand-hour>`;
   
@@ -172,7 +173,11 @@ function drawHands() {
     label('light', params.ground_h);
     
     const dr_before_sky = dr;
+    let alt_oddness = 0;
     for (let alt = params.cloud_start_alt + params.cloud_resolution; alt <= params.cloud_end_alt; alt += params.cloud_resolution) {
+      ++alt_oddness;
+      if (alt_oddness % 2 === 1) continue;
+
       const lcr = cloud_sr_by_alt(alt);
       const lea = ea + (3/60)/24*TAU;
 
@@ -184,7 +189,7 @@ function drawHands() {
 
       const display_alt = (Math.round((alt - params.cloud_start_alt)/50))*50;
 
-      result += svgPolarText(display_alt + ' m', lcr, lea - (3/60)/24*TAU, .8, '#555', 'end')
+      result += svgPolarText(display_alt + ' m', lcr, lea - (3/60)/24*TAU, 1.4, '#555', 'end')
       result += `
         <path
           d="M ${lsx} ${lsy} L ${lex} ${ley}"
@@ -210,7 +215,9 @@ function drawHands() {
       const lex = ler * Math.cos(ha);
       const ley = ler * Math.sin(ha);
 
-      result += svgPolarText(text, lcr, ea, size, color, 'end')
+      const dx = text === 'sun' ? -1 : 0;
+
+      result += svgPolarText(text, lcr, ea, size, color, 'end', dx)
       if (text !== 'sun') {
         result += `
           <path
@@ -224,13 +231,19 @@ function drawHands() {
   
   // hand proper
   {
+    // circle distance
+    const cd = params.sunDistance;
+    // circle radius
+    const cr = params.sunRadius;
     result += `
-      <polygon
-        points="-.3,-.3 -.3,.3 ${r},.02 ${r},-.02"
-        fill="black"
+      <line
+        x1="${params.display_start_r}" y1="0" x2="${params.radiusHour}" y2="0"
+        stroke="black"
+        stroke-width=".3"
       />
-      <circle cx=${cd} cy=0 r=${cr} fill=none stroke-width=.2
-          stroke="white" style="mix-blend-mode: difference"
+      <circle 
+          cx=${cd} cy=0 r=${cr}
+          fill="white" style="mix-blend-mode: difference"
           onclick="toggleSpeed()" style="cursor:pointer"
       />
     `
@@ -247,17 +260,6 @@ function drawHands() {
   
   return result;
 }
-
-function drawFrame() {
-  const r = 46;
-
-  const result = `
-    <circle r=${r+(50-r)/2} fill=none stroke="${params.frameColor}" stroke-width=${(50-r)} style="${params.shadowCSS}"/>
-  `;
-
-  return result;
-}
-
 
 export function updateHands(state: object, time: number) {
   const period = 1000 * 60 * 60 * 24;
