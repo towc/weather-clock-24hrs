@@ -189,7 +189,11 @@ function drawHands() {
 
       const display_alt = (Math.round((alt - params.cloud_start_alt)/50))*50;
 
-      result += svgPolarText(display_alt + ' m', lcr, lea - (3/60)/24*TAU, 1.4, '#555', 'end')
+      result += svgPolarText(display_alt + ' m', lcr, lea - (3/60)/24*TAU, {
+        size: 1.4,
+        color: '#555',
+        anchor: 'end',
+      })
       result += `
         <path
           d="M ${lsx} ${lsy} L ${lex} ${ley}"
@@ -217,7 +221,7 @@ function drawHands() {
 
       const dx = text === 'sun' ? -1 : 0;
 
-      result += svgPolarText(text, lcr, ea, size, color, 'end', dx)
+      result += svgPolarText(text, lcr, ea, { size, color, anchor: 'end', dx })
       if (text !== 'sun') {
         result += `
           <path

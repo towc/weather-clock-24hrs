@@ -35,7 +35,23 @@ export function lerp(ratio: number, s: number, e: number) {
 export function unlerp(v: number, s: number, e: number) {
   return (v-s)/(e-s);
 }
-export function svgPolarText(text: string | number, r: number, a: number, size=1, color="black", anchor="middle", dx=0, dy=0) {
+interface SvgPolartextOpts {
+  size?: number;
+  color?: string;
+  anchor?: string;
+  baseline?: string;
+  dx?: number;
+  dy?: number;
+}
+export function svgPolarText(text: string | number, r: number, a: number, opts: SvgPolartextOpts = {}) {
+  const {
+    size = 1,
+    color = "black",
+    anchor = "middle",
+    baseline = "middle",
+    dx = 0,
+    dy = 0
+  } = opts;
   const x = r * Math.cos(a);
   const y = r * Math.sin(a);
   
@@ -50,7 +66,7 @@ export function svgPolarText(text: string | number, r: number, a: number, size=1
   
   return `
     <g transform="translate(${x}, ${y}) rotate(${deg})">
-      <text text-anchor="${anchor}" dominant-baseline="middle"
+      <text text-anchor="${anchor}" dominant-baseline="${baseline}"
             font-size=${size} fill="${color}"
             transform="rotate(90)"
             dx="${dx}" dy="${dy}"

@@ -49,8 +49,8 @@ const params = {
   display_end_r: 50,
   
   // weather text config
-  temperature_text_h: 1.5, temperature_text_s: 1.5,
-  temperature_feels_like_text_h: 3, temperature_feels_like_text_s: 2,
+  temperature_text_h: 2, temperature_text_s: 1.5,
+  temperature_feels_like_text_h: 2, temperature_feels_like_text_s: 2,
   cover_text_h: 3, cover_text_s: 1.2,
   precipitation_text_h: 2, precipitation_text_s: 1,
   humidity_text_h: 2, humidity_text_s: 1,

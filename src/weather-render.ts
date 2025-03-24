@@ -259,10 +259,17 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     function label(name: string, value: string | number, height: number, size=1, color='black') {
       const tr = tr_h(height);
       if (is_nearest_hour) {
-        textResult += svgPolarText(name, tr, sa - .1, params.label_text_s, '#888', 'end', -1, -.2);
+        textResult += svgPolarText(name, tr, sa - .1, {
+          size: params.label_text_s,
+          color: '#888',
+          anchor: 'end',
+          baseline: 'bottom',
+          dx: -1,
+          dy: -.2
+        });
       }
       if (render_text) {
-        textResult += svgPolarText(value, tr, sa, size, color, 'middle');
+        textResult += svgPolarText(value, tr, sa, { size, color, baseline: 'middle' });
       }
     }
   }
