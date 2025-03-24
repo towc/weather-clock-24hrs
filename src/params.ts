@@ -21,8 +21,8 @@ const params = {
 
   // specific clock config
   radiusHour: TO_BE_DEFINED,
-  radiusHourText: 41.5,
-  radiusHourTextSmall: 40,
+  radiusHourText: 41,
+  radiusHourTextSmall: 39.5,
   sunDistance: TO_BE_DEFINED,
   sunRadius: .6,
   hourTickLength: 2,

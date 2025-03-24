@@ -213,6 +213,9 @@ export async function getWeatherData(tries = 0): Promise<WeatherData> {
   
   
   const raw = await getRawWeatherData();
+
+  // easier debugging
+  (window as any).raw_weather = raw;
   
   try {
 
