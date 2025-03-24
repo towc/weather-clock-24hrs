@@ -24,7 +24,7 @@ const params = {
   radiusHourText: 41.5,
   radiusHourTextSmall: 40,
   sunDistance: TO_BE_DEFINED,
-  sunRadius: 1,
+  sunRadius: .6,
   hourTickLength: 2,
   hourTickSmallLength: 1.2,
   textSizeHour: 4,
