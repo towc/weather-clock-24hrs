@@ -237,7 +237,7 @@ export function cloud_sr_by_alt(alt: number) {
 export function cloud_er_by_alt(alt: number) {
   return cloud_sr_by_alt(alt + params.cloud_resolution)
 }
-export function sky_color(solarElevation: number): string {
+export function sky_rgb(solarElevation: number): {r: number, g: number, b: number} {
   // modified from ChatGPT
 
   // Clamp solar elevation between -10 and 90 degrees for smooth transition
@@ -257,5 +257,5 @@ export function sky_color(solarElevation: number): string {
   const g = Math.round(180 * sat * Math.sqrt(t)); // Greenish-blue component, more in daytime
   const b = Math.round(255 * sat * Math.sqrt(t)); // Blue intensity, stronger in daytime
   
-  return `rgb(${r}, ${g}, ${b})`;
+  return {r, g, b};
 }

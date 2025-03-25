@@ -62,7 +62,7 @@ const params = {
   cloud_min_hPa: TO_BE_DEFINED,
   cloud_resolution: 250,
   cloud_start_alt: 140, // bratislava
-  cloud_end_alt: 306 * 8,
+  cloud_end_alt: 306 * 8, // readjusted later to be a multiple
   hourly_property_map: {
     temperature: 'temperature_2m',
     apparent_temperature: 'apparent_temperature',
@@ -89,6 +89,11 @@ params.cloud_min_hPa = metersTohPa(params.cloud_end_alt + params.cloud_resolutio
 params.sunDistance = params.display_end_r - params.sun_h/2;
 params.sunRadius = params.sun_h/4;
 params.radiusHour = params.display_end_r - params.sun_h;
+
+{
+  const cloud_steps = Math.floor((params.cloud_end_alt - params.cloud_start_alt) / params.cloud_resolution);
+  params.cloud_end_alt = params.cloud_start_alt + params.cloud_resolution * cloud_steps;
+}
 
 (window as any).toggleSpeed = () => {
   params.timeSpeed = params.timeSpeed === 1 ? 1000 : 1

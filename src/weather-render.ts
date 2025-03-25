@@ -1,5 +1,5 @@
 import {params} from "./params";
-import {cloud_er_by_alt, cloud_sr_by_alt, gradient, gradients, hourToAngle, lerp, sky_color, svgGauge, svgPolarText, toFixedOrSkip} from "./util";
+import {cloud_er_by_alt, cloud_sr_by_alt, gradient, gradients, hourToAngle, lerp, sky_rgb, svgGauge, svgPolarText, toFixedOrSkip} from "./util";
 import {WeatherData} from "./weather-data";
 
 const TAU = Math.PI * 2;
@@ -103,16 +103,59 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     // sky
     {
 
-      const sr = sky_sr;
-      const er = er_h(params.sky_h);
+      er_h(params.sky_h);
 
       for (const q of h.quarterly) {
         const qsa = lerp(q.quarter_index/4, sa, ea);
         const qea = qsa + (.25/24 * TAU) + .001;
 
-        const color = sky_color(q.solar_elevation)
+        const rgb = sky_rgb(q.solar_elevation)
 
-        result += svgGauge(qsa, qea, sr, er, color);
+        // go through clouds and transition between sky_color and gsei color depending on coverage at each level
+        const shade_groups: { sr: number, er: number, cover: number, shade: number }[] = [];
+        let cumulative_cover = 0;
+        for (const { cover, altitude } of q.cloud_cover_by_alt) {
+          const csr = cloud_sr_by_alt(altitude);
+          const cer = cloud_er_by_alt(altitude);
+
+          shade_groups.unshift({ sr: csr, er: cer, cover, shade: 0 });
+          cumulative_cover += cover;
+        }
+
+        if (cumulative_cover === 0) {
+          // no clouds, assign shade gradually
+
+          for (let si = 0; si < shade_groups.length; ++si) {
+            const group = shade_groups[si];
+            group.shade = si / shade_groups.length;
+          }
+        } else {
+          // consolidate with previous
+          for (let si = 1; si < shade_groups.length; ++si) {
+            const group = shade_groups[si];
+            const prev = shade_groups[si - 1];
+
+            if (group.cover === 0) {
+              prev.sr = group.sr;
+              shade_groups.splice(si, 1);
+              --si;
+              continue;
+            }
+
+            group.shade = prev.shade + (1 - prev.shade) * group.cover / cumulative_cover;
+          }
+        }
+
+        const min_brightness = .5;
+        const base_brightness = min_brightness + (1 - min_brightness) * q.gsei / 100;
+        for (const { sr, er, shade } of shade_groups) {
+          const {r, g, b} = rgb;
+          const brightness = lerp(shade, 1, base_brightness);
+          const color = `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`;
+          result += svgGauge(qsa, qea, sr, er, color);
+        }
+
+
       }
     }
 
