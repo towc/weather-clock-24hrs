@@ -257,9 +257,6 @@ export function sky_rgb(solarElevation: number): {r: number, g: number, b: numbe
       [10, 1],
   ]);
 
-  const sat = .9;
-  const base_brightness = 30;
-  
   // Interpolate RGB values based on elevation
   // Night (deep blue) to Sunrise/Sunset (orange-pink) to Day (bright blue)
   let r = 255 * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t); // Reduce red component at noon
@@ -267,22 +264,28 @@ export function sky_rgb(solarElevation: number): {r: number, g: number, b: numbe
   let b = 255 * Math.sqrt(t); // Blue intensity, stronger in daytime
 
   // dark blue at night
-  b += gradient(solarElevation, [
-    [-10, 50],
-    [0, 0],
-  ]);
   g += gradient(solarElevation, [
-    [-10, 20],
+    [-10, 10],
     [0, 0],
   ]);
   r += gradient(solarElevation, [
-    [-10, 20],
+    [-10, 10],
     [0, 0],
   ]);
 
-  r = lerp(r/255, base_brightness, 255 * sat);
-  g = lerp(g/255, base_brightness, 255 * sat);
-  b = lerp(b/255, base_brightness, 255 * sat);
+  if (solarElevation < 0) {
+    const night_sat = .8;
+
+    r = lerp(r/255, 0, 255 * night_sat);
+    g = lerp(g/255, 0, 255 * night_sat);
+    b = lerp(b/255, 0, 255 * night_sat);
+
+    b += gradient(solarElevation, [
+      [-90, 50],
+      [-10, 50],
+      [0, 0],
+    ]);
+  }
   
   return {r, g, b};
 }

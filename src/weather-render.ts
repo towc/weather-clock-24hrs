@@ -112,7 +112,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         const rgb = sky_rgb(q.solar_elevation)
 
         // go through clouds and transition between sky_color and gsei color depending on coverage at each level
-        const shade_groups: { sr: number, er: number, cover: number, shade: number }[] = [];
+        let shade_groups: { sr: number, er: number, cover: number, shade: number }[] = [];
         let cumulative_cover = 0;
         for (const { cover , altitude } of q.cloud_cover_by_alt) {
           const csr = cloud_start_dist_by_alt(altitude);
@@ -160,8 +160,12 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
           }
         }
 
-        const min_brightness = .4;
-        const base_brightness = min_brightness + (1 - min_brightness) * q.gsei / 100;
+        if (q.solar_elevation < 0) {
+          shade_groups = [{ sr: sky_sr, er: dr, cover: 0, shade: 0 }];
+        }
+
+        const min_brightness = .5;
+        let base_brightness = min_brightness + (1 - min_brightness) * q.gsei / 100;
         for (const { sr, er, shade } of shade_groups) {
           const {r, g, b} = rgb;
           const brightness = lerp(shade, 1, base_brightness);
