@@ -191,11 +191,11 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
           const dots_horizontal = 4;
           const dots_vertical = 3;
-          const dot_angle_step = (quarter_start_angle - quarter_end_angle) / dots_horizontal;
+          const dot_angle_step = (quarter_end_angle - quarter_start_angle) / dots_horizontal;
           const dot_dist_step = (cloud_end_dist - cloud_start_dist) / dots_vertical;
 
           for (let ci = 0; ci < dots_horizontal; ++ci) {
-            const dot_angle = quarter_start_angle + ci * dot_angle_step;
+            const dot_angle = quarter_start_angle + (ci + .5) * dot_angle_step;
 
             for (let di = 0; di < dots_vertical; ++di) {
               let dot_dist = cloud_start_dist + (di + .5) * dot_dist_step;
