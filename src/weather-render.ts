@@ -1,11 +1,12 @@
 import {params} from "./params";
-import {cloud_er_by_alt, cloud_sr_by_alt, gradient, gradients, hourToAngle, lerp, sky_rgb, svgGauge, svgPolarText, toFixedOrSkip} from "./util";
+import {cloud_er_by_alt as cloud_end_dist_by_alt, cloud_sr_by_alt as cloud_start_dist_by_alt, gradient, gradients, hourToAngle, lerp, sky_rgb, svgGauge, svgPolarText, toFixedOrSkip, toNearest} from "./util";
 import {WeatherData} from "./weather-data";
 
 const TAU = Math.PI * 2;
 
 export function drawWeatherElements(weather: WeatherData, time: number) {
   let result = ``;
+  const svg_patterns: Record<string, string> = {};
   let textResult = ``;
 
   if (weather.byHour.length === 0) {
@@ -31,8 +32,8 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
     // in reality, the start angle should be 30mins before for hourly data
     // but it will create more confusion if I do that. Text is still correct
-    const sa = hourToAngle(h.hour_index)
-    const ea = hourToAngle(h.hour_index + 1) + .0001;
+    const start_angle = hourToAngle(h.hour_index)
+    const end_angle = hourToAngle(h.hour_index + 1) + .0001;
 
     let dr = params.display_start_r;
     const er_h = (height: number) => {
@@ -52,7 +53,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       const er = er_h(params.temperature_h);
 
       for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, sa, ea);
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
         const qea = qsa + (.25/24 * TAU);
 
         const [hue, sat, light] = gradients(q.apparent_temperature, [
@@ -82,12 +83,11 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
       const color_stops = [
         [0, 30, 10, 10],
-        [50, 30, 10, 80],
         [100, 30, 10, 100],
       ]
 
       for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, sa, ea);
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
         const qea = qsa + (.25/24 * TAU);
 
         const [hue, sat, lgt] = gradients(q.gsei, color_stops);
@@ -106,7 +106,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       er_h(params.sky_h);
 
       for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, sa, ea);
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
         const qea = qsa + (.25/24 * TAU) + .001;
 
         const rgb = sky_rgb(q.solar_elevation)
@@ -114,39 +114,44 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         // go through clouds and transition between sky_color and gsei color depending on coverage at each level
         const shade_groups: { sr: number, er: number, cover: number, shade: number }[] = [];
         let cumulative_cover = 0;
-        for (const { cover, altitude } of q.cloud_cover_by_alt) {
-          const csr = cloud_sr_by_alt(altitude);
-          const cer = cloud_er_by_alt(altitude);
+        for (const { cover , altitude } of q.cloud_cover_by_alt) {
+          const csr = cloud_start_dist_by_alt(altitude);
+          const cer = cloud_end_dist_by_alt(altitude);
 
           shade_groups.unshift({ sr: csr, er: cer, cover, shade: 0 });
           cumulative_cover += cover;
         }
 
-        if (cumulative_cover === 0) {
-          // no clouds, assign shade gradually
+        if (cumulative_cover < 20) {
+          // no significant clouds, shade comes from higher clouds, so paint from above
 
           for (let si = 0; si < shade_groups.length; ++si) {
             const group = shade_groups[si];
-            group.shade = si / shade_groups.length;
-          }
-        } else {
-          // consolidate with previous
-          for (let si = 1; si < shade_groups.length; ++si) {
-            const group = shade_groups[si];
-            const prev = shade_groups[si - 1];
 
-            if (group.cover === 0) {
-              prev.sr = group.sr;
-              shade_groups.splice(si, 1);
-              --si;
-              continue;
+            if (si === 0) {
+              group.shade = 1;
             }
 
-            group.shade = prev.shade + (1 - prev.shade) * group.cover / cumulative_cover;
+            group.cover = 0;
           }
         }
 
-        const min_brightness = .5;
+        // consolidate with previous
+        for (let si = 1; si < shade_groups.length; ++si) {
+          const group = shade_groups[si];
+          const prev = shade_groups[si - 1];
+
+          if (group.cover === 0) {
+            prev.sr = group.sr;
+            shade_groups.splice(si, 1);
+            --si;
+            continue;
+          }
+
+          group.shade = prev.shade + (1 - prev.shade) * group.cover / cumulative_cover;
+        }
+
+        const min_brightness = .4;
         const base_brightness = min_brightness + (1 - min_brightness) * q.gsei / 100;
         for (const { sr, er, shade } of shade_groups) {
           const {r, g, b} = rgb;
@@ -162,9 +167,8 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     // clouds
     {
       const cloud_stops = [
-        [0, 100, 0],
-        [5, 100, 0],
-        [100, 100, .95],
+        [0, 100, .5],
+        [100, 100, .5],
       ]
       const cloud_color = (cover: number) => {
         const [lgt, alp] = gradients(cover, cloud_stops);
@@ -173,16 +177,43 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       }
 
       for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, sa, ea);
-        const qea = qsa + (.25/24 * TAU);
+        const quarter_start_angle = lerp(q.quarter_index/4, start_angle, end_angle);
+        const quarter_end_angle = quarter_start_angle + (.25/24 * TAU);
 
         for (const { cover, altitude } of q.cloud_cover_by_alt) {
-          if (cover <= 5) continue;
+          // const cover = Math.max(0, (((h.hour_index * 4 + q.quarter_index) / (24 * 4) * 100) |0) + Math.random() * 0 - 0);
+          if (cover === 0) continue;
 
-          const csr = cloud_sr_by_alt(altitude);
-          const cer = cloud_er_by_alt(altitude);
+          const cloud_start_dist = cloud_start_dist_by_alt(altitude);
+          const cloud_end_dist = cloud_end_dist_by_alt(altitude);
+
           const color = cloud_color(cover);
-          result += svgGauge(qsa, qea, csr, cer, color);
+
+          const dots_horizontal = 4;
+          const dots_vertical = 3;
+          const dot_angle_step = (quarter_start_angle - quarter_end_angle) / dots_horizontal;
+          const dot_dist_step = (cloud_end_dist - cloud_start_dist) / dots_vertical;
+
+          for (let ci = 0; ci < dots_horizontal; ++ci) {
+            const dot_angle = quarter_start_angle + ci * dot_angle_step;
+
+            for (let di = 0; di < dots_vertical; ++di) {
+              let dot_dist = cloud_start_dist + (di + .5) * dot_dist_step;
+
+              const dot_radius = gradient(cover, [
+                [0, 0],
+                [50, dot_dist_step / 2],
+                [100, dot_dist_step],
+              ])
+
+              const cx = dot_dist * Math.cos(dot_angle);
+              const cy = dot_dist * Math.sin(dot_angle);
+              
+              result += `
+                <circle cx="${cx}" cy="${cy}" r="${dot_radius}" fill="${color}" />
+              `
+            }
+          }
         }
       }
 
@@ -191,7 +222,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         [100, 60],
       ]);
       const display_value = h.cloud_cover > 5
-        ? Math.round(h.cloud_cover) + '%'
+        ? toNearest(h.cloud_cover, 5) + '%'
         : '';
 
       label('cover', display_value, params.cover_text_h, params.cover_text_s, `hsl(0,0%,${lgt_overall}%)`);
@@ -210,7 +241,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       const color = `hsla(200, 100%, 40%, ${confidence})`;
 
       for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, sa, ea);
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
         const qea = qsa + (.25/24 * TAU);
 
         if (q.precipitation < 0.01) continue;
@@ -230,7 +261,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
         // drops from cloud
         {
-          const dsr = cloud_sr_by_alt(q.thickest_alt);
+          const dsr = cloud_start_dist_by_alt(q.thickest_alt);
           const der = dsr - gradient(q.precipitation, [
             [0, .5],
             [10, 1.5],
@@ -285,7 +316,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
 
       for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, sa, ea);
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
         const qea = qsa + (.25/24 * TAU);
 
         const [sat, lgt] = gradients(q.solar_elevation, [
@@ -302,7 +333,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     function label(name: string, value: string | number, height: number, size=1, color='black') {
       const tr = tr_h(height);
       if (is_nearest_hour) {
-        textResult += svgPolarText(name, tr, sa - .1, {
+        textResult += svgPolarText(name, tr, start_angle - .1, {
           size: params.label_text_s,
           color: '#888',
           anchor: 'end',
@@ -312,12 +343,16 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         });
       }
       if (render_text) {
-        textResult += svgPolarText(value, tr, sa, { size, color, baseline: 'middle' });
+        textResult += svgPolarText(value, tr, start_angle, { size, color, baseline: 'middle' });
       }
     }
   }
   
   // fading/legend handled in clock.js so it moves with the hand
+
+  const patterns_result = `<defs>${Object.values(svg_patterns).join('')}</defs>`;
+
+  result = patterns_result + result;
 
   return {
     svg: result,

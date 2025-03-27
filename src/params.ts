@@ -11,7 +11,7 @@ const params = {
   cache_weather_data: true,
   use_demo_weather: false,
   
-  // general glock config
+  // general clock config
   startDate: new Date().toISOString(),
   showHands: true,
   progressTime: true,

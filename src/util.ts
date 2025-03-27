@@ -89,8 +89,15 @@ export function svgGauge(sa: number, ea: number, sr: number, er: number, color: 
   er += .05;
   ea += .001;
   const w = er - sr;
+  const a = ea - sa;
+
+  // using transform instead of drawing arc at location so patterns are still polar
   return `
-    <path d="${svgArc(0, 0, sr+w/2, sa, ea)}" stroke="${color}" stroke-width=${w} fill=none />
+    <path 
+      d="${svgArc(0, 0, sr+w/2, 0, a)}" 
+      stroke="${color}" stroke-width=${w} fill=none
+      transform="rotate(${radToDeg(sa)})"
+    />
   `
 }
 export function svgArc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterClockwise=false, move_or_line='M') {
@@ -204,7 +211,8 @@ export function calculateGroundSunExposureIndex(shortwave_radiation: number, ter
   const GSEI = Math.max(0, Math.min(1,
       I_actual / I_TOA * bratislava_constant));
 
-  return GSEI * 100;
+  // exponent not physical, but for visual purposes is more intuitive
+  return (GSEI**(1/2)) * 100;
 } 
 export function hPaToMeters(pressure: number) {
   const P0 = 1013.25;  // Standard sea-level pressure in hPa
@@ -250,12 +258,20 @@ export function sky_rgb(solarElevation: number): {r: number, g: number, b: numbe
   ]);
 
   const sat = .9;
+  const base_brightness = 30;
   
   // Interpolate RGB values based on elevation
   // Night (deep blue) to Sunrise/Sunset (orange-pink) to Day (bright blue)
-  const r = Math.round(255 * sat * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t)); // Reduce red component at noon
-  const g = Math.round(180 * sat * Math.sqrt(t)); // Greenish-blue component, more in daytime
-  const b = Math.round(255 * sat * Math.sqrt(t)); // Blue intensity, stronger in daytime
+  let r = 255 * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t); // Reduce red component at noon
+  let g = 180 * Math.sqrt(t); // Greenish-blue component, more in daytime
+  let b = 255 * Math.sqrt(t); // Blue intensity, stronger in daytime
+
+  r = lerp(r/255, base_brightness, 255 * sat);
+  g = lerp(g/255, base_brightness, 255 * sat);
+  b = lerp(b/255, base_brightness, 255 * sat);
   
   return {r, g, b};
+}
+export function toNearest(n: number, step: number): number {
+  return Math.round(n / step) * step
 }
