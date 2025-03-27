@@ -63,15 +63,18 @@ function drawTicks() {
     const ty = tr * Math.sin(angle);
     const ts = i % 3 === 0 ? params.textSizeHour : params.textSizeHourSmall;
 
+    const blend_mode = 'difference'
+    const color = 'white';
+
     result += `
       <line
         x1="${x}" y1="${y}" x2="${ex}" y2="${ey}" stroke-width=".25" 
-        stroke="white" style="mix-blend-mode: difference"
+        stroke="${color}" style="mix-blend-mode: ${blend_mode}"
       />
       <text 
         x="${tx}" y="${ty}"
         text-anchor="middle" dominant-baseline="middle"
-        font-size=${ts} fill="white" style="mix-blend-mode: difference"
+        font-size=${ts} fill="${color}" style="mix-blend-mode: ${blend_mode}"
       >
         ${i}
       </text>
@@ -85,7 +88,7 @@ function drawTicks() {
         <text
           x="${tx}" y="${ty}"
           text-anchor="middle" dominant-baseline="middle"
-          font-size=${params.textSizeHour*0.6} fill="white" style="mix-blend-mode: difference"
+          font-size=${params.textSizeHour*0.5} fill="${color}" style="mix-blend-mode: ${blend_mode}"
         >
           24
         </text>
@@ -109,7 +112,7 @@ function drawTicks() {
       result += `
         <line
           x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke-width="${width}"
-          stroke="white" style="mix-blend-mode: difference"
+          stroke="${color}" style="mix-blend-mode: ${blend_mode}"
         />
       `
     }
