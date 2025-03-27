@@ -206,10 +206,10 @@ export function calculateGroundSunExposureIndex(shortwave_radiation: number, ter
   // max shortwave/max terrestrial
   // in practice varies depending on season too
   const bratislava_constant = 685/925;
-
-  // GSEI is simply the ratio of actual to expected radiation at the surface
-  const GSEI = Math.max(0, Math.min(1,
-      I_actual / I_TOA * bratislava_constant));
+  const GSEI = gradient(I_actual / I_TOA * bratislava_constant, [
+    [0, .1],
+    [.7, 1],
+  ]);
 
   // exponent not physical, but for visual purposes is more intuitive
   return (GSEI**(1/2)) * 100;
@@ -265,6 +265,20 @@ export function sky_rgb(solarElevation: number): {r: number, g: number, b: numbe
   let r = 255 * Math.max(0, Math.min(1, -4 * Math.pow(t - 0.5, 2) + 1)) * (1 - t); // Reduce red component at noon
   let g = 180 * Math.sqrt(t); // Greenish-blue component, more in daytime
   let b = 255 * Math.sqrt(t); // Blue intensity, stronger in daytime
+
+  // dark blue at night
+  b += gradient(solarElevation, [
+    [-10, 50],
+    [0, 0],
+  ]);
+  g += gradient(solarElevation, [
+    [-10, 20],
+    [0, 0],
+  ]);
+  r += gradient(solarElevation, [
+    [-10, 20],
+    [0, 0],
+  ]);
 
   r = lerp(r/255, base_brightness, 255 * sat);
   g = lerp(g/255, base_brightness, 255 * sat);

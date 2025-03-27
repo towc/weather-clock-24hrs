@@ -147,8 +147,17 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
             --si;
             continue;
           }
+        }
 
-          group.shade = prev.shade + (1 - prev.shade) * group.cover / cumulative_cover;
+        if (cumulative_cover >= 20) {
+          // calc shade 
+          let cumulative_shade = 0;
+          for (let si = 0; si < shade_groups.length; ++si) {
+            const group = shade_groups[si];
+
+            group.shade = cumulative_shade + (1 - cumulative_shade) * group.cover/cumulative_cover;
+            cumulative_shade = group.shade;
+          }
         }
 
         const min_brightness = .4;
