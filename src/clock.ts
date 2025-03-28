@@ -172,8 +172,7 @@ function drawHands() {
       return dr;
     }
 
-    label('temp.', params.temperature_h);
-    label('light', params.ground_h);
+    label('temp.', params.ground_h);
     
     const dr_before_sky = dr;
     let alt_oddness = 0;

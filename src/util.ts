@@ -237,7 +237,7 @@ export function metersTohPa(altitude: number): number {
 }
 
 export function cloud_sr_by_alt(alt: number) {
-  const sky_sr = params.display_start_r + params.temperature_h + params.ground_h;
+  const sky_sr = params.display_start_r + params.ground_h;
   return gradient(alt, [
       [params.cloud_start_alt, sky_sr],
       [params.cloud_end_alt + params.cloud_resolution, sky_sr + params.sky_h],

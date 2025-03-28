@@ -46,11 +46,11 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       return tr;
     }
 
-    // temperature [°C]
+    // ground: gsei/temperature [°C]
     // displayed numbers are temperature, colors are apparent_temperature
     {
       const sr = dr;
-      const er = er_h(params.temperature_h);
+      const er = er_h(params.ground_h);
 
       for (const q of h.quarterly) {
         const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
@@ -62,7 +62,12 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
           [40, 0, 50, 60],
         ])
 
-        const color = `hsl(${hue},${sat}%,${light}%)`;
+        const gsei_factor = gradient(q.gsei, [
+          [0, .4],
+          [100, 1],
+        ])
+
+        const color = `hsl(${hue},${sat}%,${light * gsei_factor}%)`;
 
         result += svgGauge(qsa, qea, sr, er, color)
       }
@@ -73,29 +78,6 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         params.temperature_feels_like_text_h,
         params.temperature_feels_like_text_s,
         'black');
-    }
-
-    // ground/gsei
-    {
-      const sr = dr;
-      const er = er_h(params.ground_h);
-
-
-      const color_stops = [
-        [0, 30, 10, 10],
-        [100, 30, 10, 100],
-      ]
-
-      for (const q of h.quarterly) {
-        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
-        const qea = qsa + (.25/24 * TAU);
-
-        const [hue, sat, lgt] = gradients(q.gsei, color_stops);
-        const color = `hsl(${hue}, ${sat}%, ${lgt}%)`;
-
-        result += svgGauge(qsa, qea, sr, er, color);
-      }
-
     }
 
 

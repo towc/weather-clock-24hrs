@@ -41,7 +41,6 @@ const params = {
   
   // weather display config
   display_start_r: TO_BE_DEFINED,
-  temperature_h: 2,
   ground_h: 3,
   precipitation_max_h: 4,
   sky_h: 15,
@@ -85,7 +84,7 @@ const params = {
   }
 };
 
-params.display_start_r = params.display_end_r - params.temperature_h - params.ground_h - params.sky_h - params.sun_h;
+params.display_start_r = params.display_end_r - params.ground_h - params.sky_h - params.sun_h;
 params.cloud_min_hPa = metersTohPa(params.cloud_end_alt + params.cloud_resolution);
 params.sunDistance = params.display_end_r - params.sun_h/2;
 params.sunRadius = params.sun_h/4;
