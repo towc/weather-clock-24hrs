@@ -38,6 +38,7 @@ interface RawQuarter {
   relative_humidity_2m: number;
   precipitation: number;
   apparent_temperature: number;
+  freezing_level_height: number;
 }
 export interface WeatherData {
   byHour: HourlyData[]
@@ -76,6 +77,7 @@ interface QuarterlyData {
   cloud_cover_by_alt: CloudCover[];
   solar_elevation: number;
   thickest_alt: number;
+  freezing_level_height: number;
 }
 
 export function processWeatherData(raw: RawWeatherData) {

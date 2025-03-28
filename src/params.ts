@@ -81,6 +81,7 @@ const params = {
     relative_humidity: 'relative_humidity_2m',
     precipitation: 'precipitation',
     apparent_temperature: 'apparent_temperature',
+    freezing_level_height: 'freezing_level_height',
   }
 };
 

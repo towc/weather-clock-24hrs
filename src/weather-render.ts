@@ -302,6 +302,24 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
       label('rain mm', display_value, params.precipitation_text_h, params.precipitation_text_s, 'hsl(200, 100%, 43%)');
     }
 
+    // freezing level
+    {
+      const color = 'hsla(180, 100%, 83%, 1)';
+      for (const q of h.quarterly) {
+        const flh = q.freezing_level_height;
+        if (flh > params.cloud_end_alt) continue;
+
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
+        const qea = qsa + (.25/24 * TAU);
+
+        const dist = cloud_start_dist_by_alt(flh);
+        const sr = dist - .1;
+        const er = dist + .1;
+
+        result += svgGauge(qsa, qea, sr, er, color, 'stroke-dasharray=".7"');
+      }
+    }
+
     // humidity
     {
       // TODO visualize?

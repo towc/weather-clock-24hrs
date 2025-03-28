@@ -85,7 +85,7 @@ export function svgText(text: string | number, cx: number, cy: number, size=1, c
     </text>
   `
 }
-export function svgGauge(sa: number, ea: number, sr: number, er: number, color: string) {
+export function svgGauge(sa: number, ea: number, sr: number, er: number, color: string, props: string = '') {
   er += .05;
   ea += .001;
   const w = er - sr;
@@ -97,6 +97,7 @@ export function svgGauge(sa: number, ea: number, sr: number, er: number, color: 
       d="${svgArc(0, 0, sr+w/2, 0, a)}" 
       stroke="${color}" stroke-width=${w} fill=none
       transform="rotate(${radToDeg(sa)})"
+      ${props}
     />
   `
 }
