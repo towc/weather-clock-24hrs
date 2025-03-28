@@ -7,6 +7,9 @@ import { drawWeatherElements } from './weather-render';
 let activeRenderId: null | number = null;
 const svg = document.getElementById('svg')!;
 
+const isIFrame = window.location !== window.parent.location;
+const isDev = window.location.hostname === 'localhost';
+
 async function run() {
   const computed = {
     startDate: (() => {
@@ -24,9 +27,10 @@ async function run() {
   }
 
   svg.setAttribute('viewBox', '-50 -50 100 100');
-  svg.style.width = Math.min(window.innerWidth, window.innerHeight) + 'px';
 
-  if (window.innerWidth < 790 || window.innerWidth > 810) {
+  svg.style.width = isDev ? '674px' : Math.min(window.innerWidth, window.innerHeight) + 'px';
+
+  if (isIFrame) {
     // if not in an iframe
 
     svg.style.filter = 'drop-shadow(0 0 10px rgba(0,0,0,0.5))';

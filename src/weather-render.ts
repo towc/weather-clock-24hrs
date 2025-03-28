@@ -226,7 +226,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     // precipitation [mm]
     {
       const confidence = gradient(h.precipitation_probability, [
-        [0, .1],
+        [0, .5],
         [100, 1],
       ]);
 
@@ -255,25 +255,16 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
         // drops from cloud
         {
-          const dsr = cloud_start_dist_by_alt(q.thickest_alt);
-          const der = dsr - gradient(q.precipitation, [
+          const der = cloud_start_dist_by_alt(q.thickest_alt);
+          const dsr = der - gradient(q.precipitation, [
             [0, .5],
             [10, 1.5],
           ]);
-
-          const dda = gradient(q.precipitation, [
-            [0, .0075],
-            [10, .0075],
-          ])
+          const dcr = (dsr + der) / 2;
 
           const drops = 4;
-          for (let i = 0; i < drops; ++i) {
-            const dca = lerp((i+.5)/drops, qsa, qea);
-            const dsa = dca - dda/2;
-            const dea = dca + dda/2;
-
-            result += svgGauge(dsa, dea, der, dsr, color);
-          }
+          const drop_size = (qea-qsa) * dcr / drops / 2;
+          result += svgGauge(qsa, qea, dsr, der, color, `stroke-dasharray="${drop_size}" stroke-dashoffset="${drop_size*3/2}"`);
         }
       }
 
