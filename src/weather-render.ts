@@ -243,8 +243,6 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
     // precipitation [mm]
     {
-      const sr = sky_sr;
-
       const confidence = gradient(h.precipitation_probability, [
         [0, .1],
         [100, 1],
@@ -267,9 +265,10 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
             [2, 1],
             [10, 1.8],
           ]);
-          const qer = sr + height;
+          const qsr = sky_sr - height;
+          const qer = sky_sr;
 
-          result += svgGauge(qsa, qea, sr, qer, color);
+          result += svgGauge(qsa, qea, qsr, qer, color);
         }
 
         // drops from cloud
@@ -285,7 +284,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
             [10, .0075],
           ])
 
-          const drops = 3;
+          const drops = 4;
           for (let i = 0; i < drops; ++i) {
             const dca = lerp((i+.5)/drops, qsa, qea);
             const dsa = dca - dda/2;
