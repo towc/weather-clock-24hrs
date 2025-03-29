@@ -89,7 +89,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
         const gsei_factor = gradient(q.gsei, [
           [0, .4],
-          [100, 1],
+          [40, 1],
         ])
 
         const color = `hsl(${hue},${sat}%,${light * gsei_factor}%)`;
@@ -165,15 +165,25 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
             group.shade = cumulative_shade + (1 - cumulative_shade) * group.cover/cumulative_cover;
             cumulative_shade = group.shade;
           }
+
+          // normalize
+          const max_shade = shade_groups[shade_groups.length - 1].shade;
+          for (let si = 0; si < shade_groups.length; ++si) {
+            const group = shade_groups[si];
+
+            group.shade /= max_shade;
+          }
+
         }
 
         if (q.solar_elevation < 0) {
-          shade_groups = [{ sr: sky_sr, er: dr, cover: 0, shade: 0 }];
+          shade_groups = [{ sr: sky_sr, er: dr, cover: 0, shade: 1 }];
         }
 
         const base_brightness = gradient(q.gsei, [
-          [0, .1],
-          [80, 1],
+          [0, .5],
+          [1, .6],
+          [30, 1],
         ])
         for (const { sr, er, shade } of shade_groups) {
           const {r, g, b} = rgb;

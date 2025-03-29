@@ -65,7 +65,7 @@ interface QuarterlyData {
   date: Date;
   quarter_index: number;
   hour_index: number;
-  sun_incidence: number;
+  terrestrial_radiation: number;
   shortwave_radiation: number;
   sunshine_duration: number;
   relative_humidity: number;
@@ -170,10 +170,10 @@ export function processWeatherData(raw: RawWeatherData) {
         .map((q,i) => {
           q as QuarterlyData;
           q.date = new Date(raw_quarters[i].time);
-          q.is_day = q.sun_incidence > 0;
+          q.is_day = q.terrestrial_radiation > 0;
           q.sunshine = q.sunshine_duration / 3600 * 4 * 100;
           q.solar_elevation = calculateSolarElevation(q.date); // deg
-          q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.sun_incidence);
+          q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.terrestrial_radiation);
           q.quarter_index = i; 
           q.hour_index = h.hour_index;
 
@@ -266,12 +266,12 @@ function genDemoWeather(): WeatherData {
       const q: QuarterlyData = {
         date: new Date(`2025-3-21T${i}:${n*15}`),
         apparent_temperature: lerp(r(offset), -20, 50),
-        sun_incidence: lerp(Math.max(Math.sin((ratio + offset) * TAU - TAU/4),0), 0, 850),
+        terrestrial_radiation: lerp(Math.max(Math.sin((ratio + offset) * TAU - TAU/4),0), 0, 850),
         quarter_index: n,
         gsei: 0,
       } as QuarterlyData;
       // TODO make affected by clouds
-      q.gsei = Math.min(q.sun_incidence, 150) / 150 * 100;
+      q.gsei = Math.min(q.terrestrial_radiation, 150) / 150 * 100;
 
       return q;
     });
@@ -297,7 +297,7 @@ function genDemoWeather(): WeatherData {
       
       const cloud_cover = qi >= 2 ? nh.cloud_cover : h.cloud_cover;
 
-      q.sunshine = Math.min(q.sun_incidence, 100 - Math.max(cloud_cover - 50, 0));
+      q.sunshine = Math.min(q.terrestrial_radiation, 100 - Math.max(cloud_cover - 50, 0));
       q.is_day = q.sunshine > 0;
       q.precipitation = cloud_cover > 80 
         ? Math.max(Math.sin((r(offset,.01) * 2) * TAU * 4) * cloud_cover / 100 * 5 + 5, 0) 

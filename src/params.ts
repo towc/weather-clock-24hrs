@@ -74,7 +74,7 @@ const params = {
   },
   quarterly_property_map: {
     // some are repeats from hourly. We can use hourly for displayed numbers, and quarterly for arcs
-    sun_incidence: 'terrestrial_radiation',
+    terrestrial_radiation: 'terrestrial_radiation',
     shortwave_radiation: 'shortwave_radiation',
     sunshine_duration: 'sunshine_duration',
     relative_humidity: 'relative_humidity_2m',

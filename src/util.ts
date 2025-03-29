@@ -209,13 +209,10 @@ export function calculateGroundSunExposureIndex(shortwave_radiation: number, ter
   // max shortwave/max terrestrial
   // in practice varies depending on season too
   const bratislava_constant = 685/925;
-  const GSEI = gradient(I_actual / I_TOA * bratislava_constant, [
-    [0, .1],
-    [.7, 1],
-  ]);
+  const GSEI = I_actual / I_TOA * bratislava_constant;
 
   // exponent not physical, but for visual purposes is more intuitive
-  return (GSEI**(1/2)) * 100;
+  return GSEI * 100;
 } 
 export function hPaToMeters(pressure: number) {
   const P0 = 1013.25;  // Standard sea-level pressure in hPa
