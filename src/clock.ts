@@ -1,5 +1,5 @@
 import {params} from "./params";
-import { cloud_sr_by_alt, svgGauge, svgPolarText} from "./util";
+import { cloud_sr_by_alt, svgGauge, svgPolarText, toNearest} from "./util";
 
 const TAU = Math.PI * 2;
 
@@ -189,7 +189,7 @@ function drawHands() {
       const lex = lcr * Math.cos(ha);
       const ley = lcr * Math.sin(ha);
 
-      const display_alt = (Math.round((alt - params.cloud_start_alt)/50))*50;
+      const display_alt = toNearest(alt - params.cloud_start_alt, 50);
 
       result += svgPolarText(display_alt + ' m', lcr, lea - (3/60)/24*TAU, {
         size: 1.4,
@@ -202,6 +202,9 @@ function drawHands() {
           fill="none" stroke="#ccc" stroke-width="0.1"
         />
       `
+
+      // height indicator for rest of clock
+      result += svgGauge(0, TAU-.22, lcr, lcr + .01, '#0005')
     }
     dr = dr_before_sky + params.sky_h;
 
