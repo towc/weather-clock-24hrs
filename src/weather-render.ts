@@ -23,17 +23,42 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
   const last_nearest_hour_index = (nearest_hour_index + 23) % 24;
   const last_last_nearest_hour_index = (last_nearest_hour_index + 23) % 24;
 
-  for (const h of weather.byHour) {
-    const is_nearest_hour = nearest_hour_index === h.hour_index;
-    const is_last_nearest_hour  = last_nearest_hour_index === h.hour_index;
-    const is_last_last_nearest_hour = last_last_nearest_hour_index === h.hour_index;
-
-    const render_text = !is_last_nearest_hour && !is_last_last_nearest_hour;
+  for (let hi = 0; hi < weather.byHour.length; ++hi) {
+    const h = weather.byHour[hi];
 
     // in reality, the start angle should be 30mins before for hourly data
     // but it will create more confusion if I do that. Text is still correct
-    const start_angle = hourToAngle(h.hour_index)
-    const end_angle = hourToAngle(h.hour_index + 1) + .0001;
+    const start_angle = hourToAngle(hi)
+    const end_angle = hourToAngle(hi + 1) + .0001;
+
+    // daylight savings, hour skipped
+    if (!h) {
+      result += svgGauge(start_angle, end_angle, params.display_start_r, params.display_end_r, 'black');
+
+      const text_angle = (start_angle + end_angle) / 2;
+      const text_line_angle = .08;
+      const text_radius = lerp(.4, params.display_start_r, params.display_end_r);
+
+      result += svgPolarText('daylight', text_radius, text_angle + text_line_angle/2, {
+        color: 'white',
+        size: 2,
+        rotation: 90,
+      });
+      result += svgPolarText('savings', text_radius, text_angle - text_line_angle/2, {
+        color: 'white',
+        size: 2,
+        rotation: 90,
+      });
+      
+      continue;
+    }
+
+    const is_nearest_hour = nearest_hour_index === hi;
+    const is_last_nearest_hour  = last_nearest_hour_index === hi;
+    const is_last_last_nearest_hour = last_last_nearest_hour_index === hi;
+
+    const render_text = !is_last_nearest_hour && !is_last_last_nearest_hour;
+
 
     let dr = params.display_start_r;
     const er_h = (height: number) => {
@@ -154,8 +179,6 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
           const color = `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`;
           result += svgGauge(qsa, qea, sr, er, color);
         }
-
-
       }
     }
 
@@ -163,7 +186,8 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     {
       const cloud_stops = [
         [0, 100, .5],
-        [100, 100, .5],
+        [90, 100, .5],
+        [100, 95, .5],
       ]
       const cloud_color = (cover: number) => {
         const [lgt, alp] = gradients(cover, cloud_stops);
@@ -176,7 +200,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         const quarter_end_angle = quarter_start_angle + (.25/24 * TAU);
 
         for (const { cover, altitude } of q.cloud_cover_by_alt) {
-          // const cover = Math.max(0, (((h.hour_index * 4 + q.quarter_index) / (24 * 4) * 100) |0) + Math.random() * 0 - 0);
+          // const cover = Math.max(0, (((hi * 4 + q.quarter_index) / (24 * 4) * 100) |0) + Math.random() * 0 - 0);
           if (cover === 0) continue;
 
           const cloud_start_dist = cloud_start_dist_by_alt(altitude);

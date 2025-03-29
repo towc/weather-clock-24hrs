@@ -42,6 +42,7 @@ interface SvgPolartextOpts {
   baseline?: string;
   dx?: number;
   dy?: number;
+  rotation?: number;
 }
 export function svgPolarText(text: string | number, r: number, a: number, opts: SvgPolartextOpts = {}) {
   const {
@@ -50,7 +51,8 @@ export function svgPolarText(text: string | number, r: number, a: number, opts: 
     anchor = "middle",
     baseline = "middle",
     dx = 0,
-    dy = 0
+    dy = 0,
+    rotation = 0,
   } = opts;
   const x = r * Math.cos(a);
   const y = r * Math.sin(a);
@@ -68,7 +70,7 @@ export function svgPolarText(text: string | number, r: number, a: number, opts: 
     <g transform="translate(${x}, ${y}) rotate(${deg})">
       <text text-anchor="${anchor}" dominant-baseline="${baseline}"
             font-size=${size} fill="${color}"
-            transform="rotate(90)"
+            transform="rotate(${90 + rotation})"
             dx="${dx}" dy="${dy}"
             >
         ${text}

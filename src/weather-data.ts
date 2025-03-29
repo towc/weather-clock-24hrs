@@ -118,8 +118,6 @@ export function processWeatherData(raw: RawWeatherData) {
       return q;
     }) as object[] as RawQuarter[];
     
-    const hour = time.getHours()
-    
     const h = Object.fromEntries(
       Object.entries(params.hourly_property_map)
       .map(([k, v]) =>
@@ -182,14 +180,20 @@ export function processWeatherData(raw: RawWeatherData) {
           return q;
         }) as object[] as QuarterlyData[];
     
-    result.byHour[hour] = h;
+    result.byHour[h.hour_index] = h;
   }
   
   // calculations dependent on future forecast, e.g. quarterly clouds
   for(let hi = 0; hi < result.byHour.length; ++hi) {
     const h = result.byHour[hi];
-    const nh = result.byHour[(hi + 1) % result.byHour.length];
-    
+
+    // daylight savings, hour skipped
+    if (!h) continue;
+
+    let nh = result.byHour[(hi + 1) % result.byHour.length];
+    // due to daylight savings, it might be next next hour
+    if (!nh) nh = result.byHour[(hi + 2) % result.byHour.length];
+
     for (let qi = 0; qi < 4; ++qi) {
       const q = h.quarterly[qi];
       const useful_hour = qi < 2 ? h : nh;
@@ -205,7 +209,7 @@ export function processWeatherData(raw: RawWeatherData) {
   return result;
 }
 export async function getWeatherData(tries = 0): Promise<WeatherData> {
-  if (tries >= 3) {
+  if (tries >= 2) {
     throw new Error('tried too many times');
   }
   if (params.use_demo_weather) {

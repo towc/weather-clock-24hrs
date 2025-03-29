@@ -16,7 +16,7 @@ export function drawClock() {
 }
 
 function drawBackboard() {
-  const r = 46
+  const r = 50
   let result = `
     <circle r=${r+(50-r)/2} fill="${params.backboardColor}" />
     <circle r=.1 fill=black />
@@ -141,6 +141,8 @@ function drawHands() {
     const sr = params.display_start_r - .1;
     const er = params.display_end_r + .1;
 
+    const color = (alpha=1) => `rgba(238, 238, 238, ${alpha})`;
+
     // fade transition
     for (let i = 0; i < iterations; ++i) {
       const sa = fade_start_angle + fa * i;
@@ -148,9 +150,7 @@ function drawHands() {
 
       const alpha = -Math.cos(i/iterations * TAU/2) / 2 + .5;
 
-      const color = `hsla(0, 0%, 100%, ${alpha})`;
-
-      result += svgGauge(sa, ea, sr, er, color);
+      result += svgGauge(sa, ea, sr, er, color(alpha));
     }
 
     // full fade
@@ -158,7 +158,7 @@ function drawHands() {
       const fsa = full_fade_start_angle - .01;
       const fea = 0;
 
-      result += svgGauge(fsa, fea, sr, er, 'white');
+      result += svgGauge(fsa, fea, sr, er, color());
     }
   }
   
@@ -172,7 +172,7 @@ function drawHands() {
       return dr;
     }
 
-    label('temp.', params.ground_h);
+    label('temperature', params.ground_h, 1);
     
     const dr_before_sky = dr;
     let alt_oddness = 0;
