@@ -171,8 +171,10 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
           shade_groups = [{ sr: sky_sr, er: dr, cover: 0, shade: 0 }];
         }
 
-        const min_brightness = .5;
-        let base_brightness = min_brightness + (1 - min_brightness) * q.gsei / 100;
+        const base_brightness = gradient(q.gsei, [
+          [0, .1],
+          [80, 1],
+        ])
         for (const { sr, er, shade } of shade_groups) {
           const {r, g, b} = rgb;
           const brightness = lerp(shade, 1, base_brightness);
@@ -184,20 +186,25 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
 
     // clouds
     {
-      const cloud_stops = [
-        [0, 100, .5],
-        [90, 100, .5],
-        [100, 95, .5],
-      ]
-      const cloud_color = (cover: number) => {
-        const [lgt, alp] = gradients(cover, cloud_stops);
-
-        return `hsla(0,0%,${lgt}%,${alp})`;
-      }
-
       for (const q of h.quarterly) {
         const quarter_start_angle = lerp(q.quarter_index/4, start_angle, end_angle);
         const quarter_end_angle = quarter_start_angle + (.25/24 * TAU);
+
+        const base_light = gradient(q.gsei, [
+          [0, 50],
+          [60, 100],
+        ]);
+
+        const cloud_stops = [
+          [0, base_light, .9],
+          [60, base_light, .9],
+          [100, base_light, .6],
+        ]
+        const cloud_color = (cover: number) => {
+          const [lgt, alp] = gradients(cover, cloud_stops);
+
+          return `hsla(0,0%,${lgt}%,${alp})`;
+        }
 
         for (const { cover, altitude } of q.cloud_cover_by_alt) {
           // const cover = Math.max(0, (((hi * 4 + q.quarter_index) / (24 * 4) * 100) |0) + Math.random() * 0 - 0);
@@ -254,23 +261,28 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         [100, 1],
       ]);
 
-      // TODO change color based on if snow or rain or something else
-      const color = `hsla(200, 100%, 40%, ${confidence})`;
-
       for (const q of h.quarterly) {
+
         const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
         const qea = qsa + (.25/24 * TAU);
 
         if (q.precipitation < 0.01) continue;
 
+        // ensure enough contrast
+        const light = gradient(q.gsei, [
+          [0, 40],
+          [60, 60],
+        ]);
+
+        // TODO change color based on if snow or rain or something else
+        const color = `hsla(200, 100%, ${light}%, ${confidence})`;
+
         // mm pool [mm]
         {
-          const height = gradient(q.precipitation, [
-            [0, 0],
-            [.1, .1],
-            [2, 1],
-            [10, 1.8],
-          ]);
+          const max_height = params.ground_h;
+          // /4 because quarterly
+          const max_precip_shown = 10 /4;
+          const height = Math.log(Math.min(q.precipitation, max_precip_shown) + 1) / Math.log(max_precip_shown + 1) * max_height;
           const qsr = sky_sr - height;
           const qer = sky_sr;
 
