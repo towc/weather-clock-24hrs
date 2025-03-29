@@ -252,10 +252,12 @@ export function sky_rgb(solarElevation: number): {r: number, g: number, b: numbe
   const clampedElevation = Math.max(-10, Math.min(90, solarElevation));
   
   // Normalize to range [0,1] where -10 -> 0 and 90 -> 1
-  const t = gradient(clampedElevation, [
+  let t = gradient(clampedElevation, [
       [-10, 0],
       [10, 1],
   ]);
+  // TODO reconsider whole sky approach
+  t = 1;
 
   // Interpolate RGB values based on elevation
   // Night (deep blue) to Sunrise/Sunset (orange-pink) to Day (bright blue)

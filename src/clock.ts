@@ -127,7 +127,7 @@ function drawHands() {
   
   // fade when nearing 24hrs
   {
-    const fade_hours = 2;
+    const fade_hours = 1;
     const full_faded_hours = 2;
 
     const fade_angle = fade_hours / 24 * TAU + .01;
@@ -135,7 +135,7 @@ function drawHands() {
     const full_fade_start_angle = 0 - full_faded_angle;
     const fade_start_angle = full_fade_start_angle - fade_angle;
 
-    const iterations = 40;
+    const iterations = 20;
     const fa = fade_angle / iterations;
     
     const sr = params.display_start_r - .1;
@@ -146,7 +146,8 @@ function drawHands() {
     // fade transition
     for (let i = 0; i < iterations; ++i) {
       const sa = fade_start_angle + fa * i;
-      const ea = sa + fa + .0018;
+      // TODO figure out smoother fade
+      const ea = sa + fa - .0001;
 
       const alpha = -Math.cos(i/iterations * TAU/2) / 2 + .5;
 

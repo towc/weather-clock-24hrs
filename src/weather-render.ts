@@ -88,7 +88,8 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         ])
 
         const gsei_factor = gradient(q.gsei, [
-          [0, .4],
+          [0, .3],
+          [1, .4],
           [40, 1],
         ])
 
@@ -181,9 +182,9 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
         }
 
         const base_brightness = gradient(q.gsei, [
-          [0, .5],
-          [1, .6],
-          [30, 1],
+          [0, .2],
+          [10, .5],
+          [50, 1],
         ])
         for (const { sr, er, shade } of shade_groups) {
           const {r, g, b} = rgb;
