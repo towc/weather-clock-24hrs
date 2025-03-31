@@ -271,13 +271,13 @@ function drawHands() {
   return result;
 }
 
-export function updateHands(state: object, time: number) {
+export function updateHands(state: object, msSinceStartOfDay: number) {
   const period = 1000 * 60 * 60 * 24;
-  const angle = (time % period) / period * TAU + params.phaseHour;
+  const angle = (msSinceStartOfDay % period) / period * TAU + params.phaseHour;
   const angleDeg = angle / TAU * 360;
 
   document.getElementById('hand-hour')!.setAttribute('transform', `rotate(${angleDeg})`);
 
   // @ts-ignore
-  state.lastUpdate = time;
+  state.lastUpdate = msSinceStartOfDay;
 }

@@ -4,7 +4,7 @@ import {WeatherData} from "./weather-data";
 
 const TAU = Math.PI * 2;
 
-export function drawWeatherElements(weather: WeatherData, time: number) {
+export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: number) {
   let result = ``;
   const svg_patterns: Record<string, string> = {};
   let textResult = ``;
@@ -17,9 +17,7 @@ export function drawWeatherElements(weather: WeatherData, time: number) {
     };
   }
 
-  // TODO make timezone-indipendent. This will bite me in DST
-  const nearest_hour_index = new Date(time - 3600_000/2).getHours();
-
+  const nearest_hour_index = Math.round(msSinceStartOfDay / 3600000);
   const last_nearest_hour_index = (nearest_hour_index + 23) % 24;
   const last_last_nearest_hour_index = (last_nearest_hour_index + 23) % 24;
 

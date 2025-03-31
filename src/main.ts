@@ -14,7 +14,7 @@ async function run() {
   const computed = {
     startDate: (() => {
       const date = new Date(params.startDate);
-      return date.getTime() - date.getTimezoneOffset() * 1000 * 60;
+      return date.getTime()// - date.getTimezoneOffset() * 1000 * 60;
     })(),
     realStart: Date.now(),
   }
@@ -45,13 +45,17 @@ async function run() {
       state.drawn = true;
     }
 
+    const date = new Date(time);
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const msSinceStartOfDay = time - startOfDay.getTime();
+
     if (params.showHands) {
-      updateHands(state, time);
+      updateHands(state, msSinceStartOfDay);
     }
 
     const redraw_weather_every_s = 60;
     if (time > state.lastWeatherUpdate + redraw_weather_every_s * 1000) {
-      updateWeatherElements(time);
+      updateWeatherElements(msSinceStartOfDay);
       state.lastWeatherUpdate = time;
     }
 
@@ -65,10 +69,10 @@ async function run() {
 
   render(Date.now());
   
-  async function updateWeatherElements(time: number) {
+  async function updateWeatherElements(msSinceStartOfDay: number) {
     const weather = await getWeatherData();
     
-    const drawn = drawWeatherElements(weather, time);
+    const drawn = drawWeatherElements(weather, msSinceStartOfDay);
 
     document.getElementById('weather-elements')!.innerHTML = drawn.svg;
     document.getElementById('weather-text')!.innerHTML = drawn.text;
