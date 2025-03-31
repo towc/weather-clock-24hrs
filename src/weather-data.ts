@@ -1,5 +1,5 @@
 import {params} from "./params";
-import {calculateGroundSunExposureIndex, calculateSolarElevation, lerp, range} from "./util";
+import {calculateGroundSunExposureIndex, calculateSolarElevation, lerp, range, rotate} from "./util";
 
 const TAU = Math.PI * 2;
 
@@ -16,6 +16,7 @@ interface RawWeatherData {
     time: string[];
     sun_incidence: number[];
     shortwave_radiation: number[];
+    terrestrial_radiation: number[];
     sunshine_duration: number[];
     relative_humidity_2m: number[];
     precipitation: number[];
@@ -90,6 +91,34 @@ export function processWeatherData(raw: RawWeatherData) {
     || !Object.values(params.quarterly_property_map).every(k => k in raw.minutely_15)
   ) {
     throw new Error('missing properties in raw data')
+  }
+
+  // some values actually refer to previous data point
+  {
+    const quartlerly_prev: (keyof RawWeatherData['minutely_15'])[] = [
+      'sunshine_duration',
+      'precipitation',
+      // radiations are averaged "over the 15 minutes", not specified to be previous and from data looks like next 15
+      //'terrestrial_radiation',
+      //'shortwave_radiation',
+    ]
+
+    for (const key of quartlerly_prev) {
+      // rotate is technically incorrect, but we don't really care about the value at midnight the next day
+      // @ts-ignore
+      raw.minutely_15[key] = rotate(raw.minutely_15[key]);
+    }
+
+    const hourly_prev: (keyof RawWeatherData['hourly'])[] = [
+      'precipitation',
+      'precipitation_probability',
+    ]
+
+    for (const key of hourly_prev) {
+      // rotate is technically incorrect, but we don't really care about the value at midnight the next day
+      // @ts-ignore
+      raw.hourly[key] = rotate(raw.hourly[key]);
+    }
   }
   
   for (let i = 0; i < raw.hourly.time.length; ++i) {

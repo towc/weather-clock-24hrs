@@ -294,3 +294,6 @@ export function sky_rgb(solarElevation: number): {r: number, g: number, b: numbe
 export function toNearest(n: number, step: number): number {
   return Math.round(n / step) * step
 }
+export function rotate<T>(array: T[]): T[] {
+  return [...array.slice(1), array[0]];
+}

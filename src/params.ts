@@ -35,7 +35,7 @@ const params = {
   textSizeHourSmall: 2.8,
   phaseHour: TAU/4,
   backboardColor: '#eee',
-  bgImage: false, // 'https://t2.ea.ltmcdn.com/en/posts/5/1/4/types_and_breeds_of_husky_dogs_1415_600_square.jpg',
+  bgImage: false, // url
   bgImageOpacity: .5,
   shadowCSS: "filter: drop-shadow(0 0 1px #0008);",
   
