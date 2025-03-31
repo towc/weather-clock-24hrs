@@ -64,6 +64,8 @@ interface CloudCover {
 }
 interface QuarterlyData {
   date: Date;
+  // halfway through the quarter
+  mid_date: Date;
   quarter_index: number;
   hour_index: number;
   terrestrial_radiation: number;
@@ -98,9 +100,8 @@ export function processWeatherData(raw: RawWeatherData) {
     const quartlerly_prev: (keyof RawWeatherData['minutely_15'])[] = [
       'sunshine_duration',
       'precipitation',
-      // radiations are averaged "over the 15 minutes", not specified to be previous and from data looks like next 15
-      //'terrestrial_radiation',
-      //'shortwave_radiation',
+      'terrestrial_radiation',
+      'shortwave_radiation',
     ]
 
     for (const key of quartlerly_prev) {
@@ -199,9 +200,10 @@ export function processWeatherData(raw: RawWeatherData) {
         .map((q,i) => {
           q as QuarterlyData;
           q.date = new Date(raw_quarters[i].time);
+          q.mid_date = new Date(+q.date + 15 * 60_000);
           q.is_day = q.terrestrial_radiation > 0;
           q.sunshine = q.sunshine_duration / 3600 * 4 * 100;
-          q.solar_elevation = calculateSolarElevation(q.date); // deg
+          q.solar_elevation = calculateSolarElevation(q.mid_date); // deg
           q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.terrestrial_radiation);
           q.quarter_index = i; 
           q.hour_index = h.hour_index;
