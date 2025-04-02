@@ -334,7 +334,7 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
         const sr = dist - .1;
         const er = dist + .1;
 
-        result += svgGauge(qsa, qea, sr, er, color, 'stroke-dasharray=".7"');
+        result += svgGauge(qsa, qea, sr, er, color, 'stroke-dasharray=".7 .5"');
       }
     }
 

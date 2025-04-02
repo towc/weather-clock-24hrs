@@ -125,21 +125,25 @@ function drawHands() {
   
   let result = `<g id=hand-hour>`;
   
+  const small_fade_angle = -(15/60)/24*TAU;
   // fade when nearing 24hrs
   {
     const fade_hours = 1;
     const full_faded_hours = 2;
+    const visible_behind_hours = .25;
 
     const fade_angle = fade_hours / 24 * TAU + .01;
     const full_faded_angle = full_faded_hours / 24 * TAU;
-    const full_fade_start_angle = 0 - full_faded_angle;
+    const visible_behind_angle = visible_behind_hours / 24 * TAU;
+
+    const full_fade_start_angle = -visible_behind_angle - full_faded_angle;
     const fade_start_angle = full_fade_start_angle - fade_angle;
 
     const iterations = 20;
     const fa = fade_angle / iterations;
     
     const sr = params.display_start_r - .1;
-    const er = params.display_end_r + .1;
+    const er = params.display_end_r - params.sun_h + .01;
 
     const color = (alpha=1) => `rgba(238, 238, 238, ${alpha})`;
 
@@ -157,15 +161,18 @@ function drawHands() {
     // full fade
     {
       const fsa = full_fade_start_angle - .01;
-      const fea = 0;
+      const fea = small_fade_angle
 
       result += svgGauge(fsa, fea, sr, er, color());
+
+      // small fade
+      //result += svgGauge(fea, 0, sr, er, color(0));
     }
   }
   
   // legend
   {
-    const ha = 0;
+    const ha = small_fade_angle;
     const ea = ha - ((10/60)/24*TAU);
     let dr = params.display_start_r;
     const nr = (height: number) => {
@@ -205,11 +212,11 @@ function drawHands() {
       `
 
       // height indicator for rest of clock
-      result += svgGauge(0, TAU-.22, lcr, lcr + .01, '#0005')
+      result += svgGauge(small_fade_angle, TAU + small_fade_angle - .22, lcr, lcr + .01, '#0005')
     }
     dr = dr_before_sky + params.sky_h;
 
-    label('sun', params.sun_h)
+    result += svgPolarText('sun', params.display_end_r - 1, 0, { color: '#555', size: 1.2 })
 
     function label(text: string, height: number, size=1.2, color='#555') {
       const lsr = dr;
@@ -245,16 +252,20 @@ function drawHands() {
     const cd = params.sunDistance;
     // circle radius
     const cr = params.sunRadius;
+    
+    const sx = params.display_start_r;
+    const ex = cd - cr;
+    const w = .2;
     result += `
       <line
-        x1="${params.display_start_r}" y1="0" x2="${params.radiusHour}" y2="0"
-        stroke="black"
-        stroke-width=".3"
+        x1="${sx}" y1=0 x2=${ex} y2=0
+        stroke-width="${w}"
+        stroke="#f66"
       />
       <circle 
           cx=${cd} cy=0 r=${cr}
-          fill="white" style="mix-blend-mode: difference"
-          onclick="toggleSpeed()" style="cursor:pointer"
+          fill="white" style="mix-blend-mode: difference; cursor:pointer"
+          onclick="toggleSpeed()"
       />
     `
   }
