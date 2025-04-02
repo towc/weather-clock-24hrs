@@ -69,6 +69,8 @@ const params = {
     precipitation_probability: 'precipitation_probability',
     precipitation: 'precipitation',
     cloud_cover: 'cloud_cover',
+    cloud_cover_mid: 'cloud_cover_mid',
+    cloud_cover_high: 'cloud_cover_high',
     visbility: 'visibility',
     wind_speed: 'wind_speed_10m',
   },

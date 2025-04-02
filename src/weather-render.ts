@@ -118,6 +118,8 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
         const rgb = sky_rgb(q.solar_elevation)
 
         // go through clouds and transition between sky_color and gsei color depending on coverage at each level
+        
+
         let shade_groups: { sr: number, er: number, cover: number, shade: number }[] = [];
         let cumulative_cover = 0;
         for (const { cover , altitude } of q.cloud_cover_by_alt) {
@@ -128,6 +130,11 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
           cumulative_cover += cover;
         }
 
+        // high clouds provide very little shade, even at 100% coverage
+        let base_shade = h.cloud_cover_high/100 * .2;
+        // mid clouds provide more shade, but if no low clouds, still some sun
+        base_shade = base_shade + (1 - base_shade) * (h.cloud_cover_mid/100 * .4);
+
         if (cumulative_cover < 20) {
           // no significant clouds, shade comes from higher clouds, so paint from above
 
@@ -135,7 +142,7 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
             const group = shade_groups[si];
 
             if (si === 0) {
-              group.shade = 1;
+              group.shade = base_shade;
             }
 
             group.cover = 0;
@@ -157,7 +164,7 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
 
         if (cumulative_cover >= 20) {
           // calc shade 
-          let cumulative_shade = 0;
+          let cumulative_shade = base_shade;
           for (let si = 0; si < shade_groups.length; ++si) {
             const group = shade_groups[si];
 

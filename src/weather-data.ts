@@ -54,6 +54,8 @@ interface HourlyData {
   hour_index: number;
   sunshine: number;
   cloud_cover: number;
+  cloud_cover_mid: number;
+  cloud_cover_high: number;
   cloud_cover_by_alt: CloudCover[];
   thickest_alt: number;
   quarterly: QuarterlyData[];
@@ -78,6 +80,8 @@ interface QuarterlyData {
   gsei: number;
   is_day: number | boolean;
   cloud_cover_by_alt: CloudCover[];
+  cloud_cover_mid: number;
+  cloud_cover_high: number;
   solar_elevation: number;
   thickest_alt: number;
   freezing_level_height: number;
@@ -230,6 +234,9 @@ export function processWeatherData(raw: RawWeatherData) {
       const useful_hour = qi < 2 ? h : nh;
       
       q.cloud_cover_by_alt = useful_hour.cloud_cover_by_alt;
+      q.cloud_cover_mid = useful_hour.cloud_cover_mid;
+      q.cloud_cover_high = useful_hour.cloud_cover_high;
+
       q.thickest_alt = useful_hour.thickest_alt;
     }
   }
