@@ -232,7 +232,7 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
           const color = cloud_color(cover);
 
           const dots_horizontal = 4;
-          const dots_vertical = 3;
+          const dots_vertical = 2;
           const dot_angle_step = (quarter_end_angle - quarter_start_angle) / dots_horizontal;
           const dot_dist_step = (cloud_end_dist - cloud_start_dist) / dots_vertical;
 

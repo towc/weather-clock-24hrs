@@ -61,7 +61,7 @@ const params = {
   cloud_min_hPa: TO_BE_DEFINED,
   cloud_resolution: 250,
   cloud_start_alt: 140, // bratislava
-  cloud_end_alt: 306 * 8, // readjusted later to be a multiple
+  cloud_end_alt: 3000, // readjusted later to be a multiple
   hourly_property_map: {
     temperature: 'temperature_2m',
     apparent_temperature: 'apparent_temperature',

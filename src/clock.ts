@@ -203,6 +203,7 @@ function drawHands() {
         size: 1.4,
         color: '#555',
         anchor: 'end',
+        rotation: -4,
       })
       result += `
         <path
