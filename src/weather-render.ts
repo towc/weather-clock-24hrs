@@ -368,17 +368,17 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
     // wind speed at ground level
     {
       label('wind', '', params.wind_h);
-      for (const q of h.quarterly) {
-        // only display every 2 quarters, to reduce visual noise
-        if (q.quarter_index !== 0) continue;
 
-        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
-        const qea = qsa + (.25/24 * TAU);
-        const qca = (qsa + qea) / 2;
+      // wind barbs are where text would be, so follow same rules
+      if (render_text) {
+        // only display every start of hour
+        // not using hourly values because gusts are not instant, but wind speed is
+        const q = h.quarterly[0];
+
         const cr = tr;
 
-        const x = cr * Math.cos(qca);
-        const y = cr * Math.sin(qca);
+        const x = cr * Math.cos(start_angle);
+        const y = cr * Math.sin(start_angle);
 
         windResult += svgWindBarbWithGust(q.wind_speed, q.wind_gusts, q.wind_direction, x, y)
       }
