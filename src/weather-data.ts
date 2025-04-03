@@ -85,6 +85,9 @@ interface QuarterlyData {
   solar_elevation: number;
   thickest_alt: number;
   freezing_level_height: number;
+  wind_speed: number;
+  wind_direction: number;
+  wind_gusts: number;
 }
 
 export function processWeatherData(raw: RawWeatherData) {
@@ -211,6 +214,10 @@ export function processWeatherData(raw: RawWeatherData) {
           q.gsei = calculateGroundSunExposureIndex(q.shortwave_radiation, q.terrestrial_radiation);
           q.quarter_index = i; 
           q.hour_index = h.hour_index;
+
+          // convert km/h to kts
+          q.wind_speed = q.wind_speed * 0.539957;
+          q.wind_gusts = q.wind_gusts * 0.539957;
 
           return q;
         }) as object[] as QuarterlyData[];

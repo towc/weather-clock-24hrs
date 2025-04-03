@@ -47,12 +47,13 @@ const params = {
   sun_h: 8,
   display_end_r: 50,
   
-  // weather text config
+  // weather text config (or center display)
   temperature_text_h: 2, temperature_text_s: 1.5,
   temperature_feels_like_text_h: 2, temperature_feels_like_text_s: 2,
   cover_text_h: 3, cover_text_s: 1.2,
   precipitation_text_h: 2, precipitation_text_s: 1,
   humidity_text_h: 2, humidity_text_s: 1,
+  wind_h: 3,
   label_text_s: 1,
   
   // weather fetch config
@@ -71,8 +72,6 @@ const params = {
     cloud_cover: 'cloud_cover',
     cloud_cover_mid: 'cloud_cover_mid',
     cloud_cover_high: 'cloud_cover_high',
-    visbility: 'visibility',
-    wind_speed: 'wind_speed_10m',
   },
   quarterly_property_map: {
     // some are repeats from hourly. We can use hourly for displayed numbers, and quarterly for arcs
@@ -83,6 +82,11 @@ const params = {
     precipitation: 'precipitation',
     apparent_temperature: 'apparent_temperature',
     freezing_level_height: 'freezing_level_height',
+    wind_speed: 'wind_speed_10m',
+    wind_direction: 'wind_direction_10m',
+    wind_gusts: 'wind_gusts_10m',
+    // unused for now
+    visbility: 'visibility',
   }
 };
 

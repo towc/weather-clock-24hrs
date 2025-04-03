@@ -297,3 +297,108 @@ export function toNearest(n: number, step: number): number {
 export function rotate<T>(array: T[]): T[] {
   return [...array.slice(1), array[0]];
 }
+/**
+ * speed/gusts in knots
+ * direction in degrees
+ *
+ * white: normal wind; grey: gust
+ */
+export function svgWindBarbWithGust(speed: number, gusts: number, direction: number, x: number, y: number): string {
+  if (speed < 3 && gusts < 3) {
+    // nothing to see, no wind
+    // could be the 2 circles for "calm", but no need for visual noise
+    return ``
+  }
+
+  const baseRes = svgWindBarb(speed, '#222');
+  const gustRes = svgWindBarb(gusts, '#f22');
+
+  // line constructed with 0 = from east
+  const angle = direction - 90;
+
+  // center
+  const maxLen = Math.max(baseRes.size, gustRes.size);
+  const dx = -maxLen/2 * Math.cos(angle * TAU / 360);
+  const dy = -maxLen/2 * Math.sin(angle * TAU / 360);
+
+  return `<g transform="translate(${x + dx}, ${y + dy}) rotate(${angle})">
+    ${gustRes.text}
+    ${baseRes.text}
+  </g>`;
+}
+export function svgWindBarb(speed: number, color: string): { text: string, size: number } {
+
+  if (speed < 3) {
+    // nothing to see, no wind
+    // could be the 2 circles for "calm", but no need for visual noise
+    return { text: '', size: 0 };
+  }
+
+  const width = .2;
+
+  const baseLength = .5;
+  const stepLength = .6;
+  // also acts as length displacement, 45deg
+  const stepHeight = .6;
+  const stepSmallHeight = stepHeight * .75;
+
+  let result = '';
+
+  let totalLength = baseLength;
+  const elements = speedToWindBarbElements(speed);
+
+  for (const element of elements) {
+    switch (element) {
+      case 'space':
+        totalLength += stepLength;
+        break;
+      case 'short':
+        totalLength += stepLength;
+        result += svgLine(totalLength, 0, totalLength + stepSmallHeight, stepSmallHeight, { color, width });
+        break;
+      case 'long':
+        totalLength += stepLength;
+        result += svgLine(totalLength, 0, totalLength + stepHeight, stepHeight, { color, width });
+        break;
+      case 'triangle':
+        totalLength += stepLength;
+        result += `
+          <polygon points="${totalLength},0 ${totalLength + stepHeight},${stepHeight} ${totalLength + stepHeight},0" fill="${color}" />
+        `
+        totalLength += stepHeight - stepLength;
+        break;
+    }
+  }
+
+  // base line
+  result += svgLine(0, 0, totalLength, 0, { color, width });
+
+  return { size: totalLength, text: result };
+}
+type WindBarbElement = 'short' | 'long' | 'triangle' | 'space'
+// speed in kts
+export function speedToWindBarbElements(speed: number, prevs: WindBarbElement[] = []): WindBarbElement[] {
+  if (speed < 3) return prevs;
+
+  if (speed >= 50) {
+    return speedToWindBarbElements(speed - 50, ['triangle', ...prevs]);
+  } else if (speed >= 10) {
+    return speedToWindBarbElements(speed - 10, ['long', ...prevs]);
+  } else {
+    // there can only be one short, and it is always the last
+
+    // only 5kts is a detached short
+    if (prevs.length === 0) return ['short', 'space'];
+
+    return ['short', ...prevs];
+  }
+}
+interface SvgLineOpts {
+  color?: string;
+  width?: number;
+  cap?: 'butt' | 'round' | 'square';
+}
+export function svgLine(x1: number, y1: number, x2: number, y2: number, opts: SvgLineOpts = {}): string {
+  const {color = 'black', width = .1, cap = 'round'} = opts;
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${width}" stroke-linecap="${cap}" />`;
+}

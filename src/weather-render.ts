@@ -1,5 +1,5 @@
 import {params} from "./params";
-import {cloud_er_by_alt as cloud_end_dist_by_alt, cloud_sr_by_alt as cloud_start_dist_by_alt, gradient, gradients, hourToAngle, lerp, sky_rgb, svgGauge, svgPolarText, toFixedOrSkip, toNearest} from "./util";
+import {cloud_er_by_alt as cloud_end_dist_by_alt, cloud_sr_by_alt as cloud_start_dist_by_alt, gradient, gradients, hourToAngle, lerp, sky_rgb, svgGauge, svgPolarText, svgWindBarbWithGust, toFixedOrSkip, toNearest} from "./util";
 import {WeatherData} from "./weather-data";
 
 const TAU = Math.PI * 2;
@@ -7,6 +7,7 @@ const TAU = Math.PI * 2;
 export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: number) {
   let result = ``;
   const svg_patterns: Record<string, string> = {};
+  let windResult = ``;
   let textResult = ``;
 
   if (weather.byHour.length === 0) {
@@ -364,6 +365,26 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
       label('RH', display_humidity + '%', params.humidity_text_h, params.humidity_text_s, textColor);
     }
 
+    // wind speed at ground level
+    {
+      label('wind', '', params.wind_h);
+      for (const q of h.quarterly) {
+        // only display every 2 quarters, to reduce visual noise
+        if (q.quarter_index !== 0) continue;
+
+        const qsa = lerp(q.quarter_index/4, start_angle, end_angle);
+        const qea = qsa + (.25/24 * TAU);
+        const qca = (qsa + qea) / 2;
+        const cr = tr;
+
+        const x = cr * Math.cos(qca);
+        const y = cr * Math.sin(qca);
+
+        windResult += svgWindBarbWithGust(q.wind_speed, q.wind_gusts, q.wind_direction, x, y)
+      }
+    }
+
+
     // sun (visible in clear sky)
     {
       const sr = dr;
@@ -407,7 +428,7 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
 
   const patterns_result = `<defs>${Object.values(svg_patterns).join('')}</defs>`;
 
-  result = patterns_result + result;
+  result = patterns_result + result + windResult;
 
   return {
     svg: result,
