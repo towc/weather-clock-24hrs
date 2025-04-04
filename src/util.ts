@@ -311,7 +311,7 @@ export function svgWindBarbWithGust(speed: number, gusts: number, direction: num
   }
 
   const baseRes = svgWindBarb(speed, '#222');
-  const gustRes = svgWindBarb(gusts, '#f22');
+  const gustRes = svgWindBarb(gusts, '#ccc');
 
   // line constructed with 0 = from east
   const angle = direction - 90;
