@@ -136,8 +136,15 @@ export function drawWeatherElements(weather: WeatherData, msSinceStartOfDay: num
         // mid clouds provide more shade, but if no low clouds, still some sun
         base_shade = base_shade + (1 - base_shade) * (h.cloud_cover_mid/100 * .4);
 
+        if (base_shade < .2) {
+          // no significant clouds higher either, so shade comes from sun angle
+          base_shade = 1;
+        }
+
+
         if (cumulative_cover < 20) {
           // no significant clouds, shade comes from higher clouds, so paint from above
+
 
           for (let si = 0; si < shade_groups.length; ++si) {
             const group = shade_groups[si];
